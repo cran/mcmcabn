@@ -1,0 +1,21 @@
+citHeader("To cite `mcmcabn` package in publication use:")
+
+citEntry(entry = "Article",
+  title        = "Is a single unique Bayesian network enough to accurately represent your data?",
+  author       = personList(as.person("Gilles Kratzer"), as.person("Reinhard Furrer")),
+  year         = "2019",
+  journal      ="arXiv preprint arXiv:1902.06641",
+  textVersion  =
+  paste("Kratzer, G. and Furrer, R. (2019). Is a single unique Bayesian network enough to accurately represent your data?. arXiv preprint arXiv:1902.06641"),
+)
+
+citEntry(entry = "Manual",
+    title = "mcmcabn: a structural MCMC sampler for DAGs learned from observed systemic datasets",
+    author = personList(as.person("Gilles Kratzer"), as.person("Reinhard Furrer")),
+    year = "2019",
+    note = "R package version 0.1",
+    url = "https://CRAN.R-project.org/package=mcmcabn",
+  textVersion  =
+  paste("Kratzer, G. and Furrer, R. (2019). mcmcabn: a structural MCMC sampler for DAGs learned from observed systemic datasets. R package version 0.1.
+  https://CRAN.R-project.org/package=mcmcabn"),
+)

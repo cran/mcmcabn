@@ -1,0 +1,21 @@
+export(mcmcabn,
+query,
+plot.mcmcabn,
+summary.mcmcabn,
+print.mcmcabn
+)
+       
+       importFrom(gRbase, topoSortMAT)
+       importFrom(stats,rbinom, acf)
+       import(ggplot2)
+       importFrom(coda,effectiveSize)
+       import(abn)
+       importFrom(ggpubr, theme_pubr)
+       importFrom(cowplot, ggdraw, axis_canvas, insert_yaxis_grob)
+       importFrom(graphics, plot)
+       importFrom(stats, as.formula, dist, quantile, sd)
+       
+#methods for class mcmcabn
+S3method(plot, mcmcabn)
+S3method(summary, mcmcabn)
+S3method(print, mcmcabn)

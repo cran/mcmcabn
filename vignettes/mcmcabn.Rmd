@@ -1,0 +1,326 @@
+---
+title: "mcmcabn: a structural MCMC sampler for DAGs learned from observed systemic datasets"
+author: "Gilles Kratzer, Reinhard Furrer"
+date: "2019-02-28"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{mcmcabn}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[utf8]{inputenc}
+link-citations: yes
+---
+
+```{r setup, include = FALSE, cache = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, 
+  comment = "#>",
+  fig.width = 7, 
+  fig.height = 5,  
+  fig.dpi = 200, 
+  fig.align = "center",
+  warning = FALSE,
+  message = FALSE
+)
+options(digits = 3)
+```
+
+**What is the package designed for?**
+
+The three main problems addressed by this R package are: 
+
+1. Selecting the most probable structure based on a cache of pre-computed scores.
+2. Controlling for overfitting.
+3. Sampling the landscape of high scoring structures. 
+
+The latter could be very useful in an applied perspective to avoid reducing the richness of Bayesian network modelling to only **one** structure. Indeed, it allows users to quantify the marginal impact of relationships (arcs in a network) of interest by marginalising out over structures or nuisance dependencies (i.e. all other possible relationships). Structural Monte Carlo Markov Chain (MCMC) seems a very elegant and natural way to estimate the *true* marginal impact, so one can determine if it's magnitude is big enough to consider as a worthwhile intervention. 
+
+Note: in this vignette *structural* MCMC means that the MCMC moves are performed at structure level (i.e. at a Bayesian network or at a Directed Acyclic Graph (DAG)) and not at node ordering level for example. The advantage is that explicit priors can be formulated. A DAG is a graph used to encode the joint probability of a set of variables. It is made of nodes (random variables) and arrows or arcs (directed links representing the relationships among variables). 
+
+**How does it work?**
+
+The `mcmcabn` R package takes a cache of pre-computed network scores as input (possibly computed using  `buildscorecache()` function from `abn` R package). Then, the `mcmcabn()` function generates MCMC samples from the posterior distribution of the most supported DAGs. To do so the user should choose a structural prior and a learning scheme. `mcmcabn` is equipped with multiple structural priors: the so-called Koivisto prior (an uninformative prior), the Ellis prior (a modular flat prior) and a possibly user define prior and three algorithms for inferring the structure of Bayesian networks: the classical Monte Carlo Markov Chain Model Choice ((MC)$^3$), the new edge reversal (REV) from Grzegorczyk and Husmeier (2008) and the Markov blanket resampling (MBR) from Su and Borsuk (2016).
+
+**What are the R package functionalities?**
+
+The workhorse of the R package is the `mcmcabn()` function. It generates MCMC samples from the posterior distribution of the DAGs. This object of class `mcmcabn` can be summarized with a comprehensive verbal description or a plot. From those samples one can either compute the most probable structure and plot the cumulative maximum score achieved or analyse with the `query()` R function that recognize formula statement. For example what is the probability to have an arc between two nodes, one node being in the Markov blanket of another or what is the probability to **not** have an arc between two nodes? Alternatively, one can query the frequency of an arc in one direction relative to the opposite direction.
+
+**Alternative R packages**
+
+[BiDAG](https://CRAN.R-project.org/package=BiDAG) is an MCMC sampler that combined partition MCMC with constrained based methods. This R package is efficient to sample large DAGs. 
+
+**What is the structure of this document?**
+
+We first illustrate the package with a simple example. Then some more theoretical details are provided.
+
+# Simple *mcmcabn* example
+
+The package is available on [CRAN](https://CRAN.R-project.org/package=mcmcabn) and can be installed directly in R. However it needs two R packages: [abn](https://CRAN.R-project.org/package=abn) and [gRbase](https://CRAN.R-project.org/package=gRbase) that requires libraries not stored on [CRAN](https://cran.r-project.org/) but on [bioconductor](http://www.bioconductor.org/). Hence those two packages **must** be installed **before** installing `mcmcabn`:
+
+
+```{r,eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(c("RBGL", "Rgraphviz", "graph"),  version = "3.8")
+
+install.packages("mcmcabn")
+```
+
+Once installed, the `mcmcabn` R package can be loaded using:
+
+```{r,eval=TRUE}
+library(mcmcabn)
+```
+
+Let us start with an example from the `bnlearn` R package from Scutari (2010). It is about a small synthetic dataset from Lauritzen and Spiegelhalter (1988) about lung diseases (tuberculosis, lung cancer or bronchitis) and visits to Asia (8 nodes and 8 arcs).
+
+One needs to pre-compute a cache of scores. We use the R package `abn` to do it. But first let us define the list of distribution for the nodes and plot the network.
+
+```{r, warning = FALSE, message = FALSE}
+library(bnlearn) #for the dataset
+library(abn) #to pre-compute the scores 
+library(ggplot2) #plotting
+library(ggpubr) #plotting
+library(cowplot) #plotting
+library(ggdag) #to plot the DAG
+
+#renaming columns of the dataset
+colnames(asia) <- c("Asia", "Smoking", "Tuberculosis", "LungCancer", "Bronchitis", "Either", "XRay", "Dyspnea")
+
+#lets define the distribution list
+dist.asia <- list(Asia = "binomial",
+                  Smoking = "binomial",
+                  Tuberculosis = "binomial",
+                  LungCancer = "binomial", 
+                  Bronchitis = "binomial",
+                  Either = "binomial",
+                  XRay = "binomial", 
+                  Dyspnea = "binomial")
+
+#plot the BN as described in the paper
+dag  <- dagify(Tuberculosis~Asia,
+               Either~Tuberculosis,
+               XRay~Either,
+               Dyspnea~Either,
+               Bronchitis~Smoking,
+               LungCancer~Smoking,
+               Either~LungCancer,
+               Dyspnea~Bronchitis)
+
+ggdag_classic(dag, size = 6) + theme_dag_blank()
+
+```
+
+
+For the first search, it is advised to limit the number of parents per node to 2, which is the maximum number of parent of the network.
+
+```{r, eval=FALSE}
+#loglikelihood scores
+bsc.compute.asia <- buildscorecache(data.df = asia,
+                                    data.dists = dist.asia,
+                                    max.parents = 2)
+```
+
+We use the `mcmcabn()` function on the cache of pre-computed networks scores. One needs to define the type of score used (here is the marginal likelihood `mlik` other choice are: `bic`, `aic` or `mdl`). The maximum of number of parents per node (same as the one used in `buildscorecache()`). The MCMC learning scheme: number of MCMC samples, number of thinned sampled (to avoid autocorrelation) and the length of the burn-in phase. Here we choose: 1000 returned MCMC steps and 99 thinned steps in between. It means that for each returned MCMC move 99 have been thinned. The burn-in phase is set to 10000 steps. We decide to initiate the algorithm with a random DAG `start.dag = "random"`. This means that the function will randomly select a valid DAG. In this context, valid means no cycle and an appropriate maximum number of parent. The frequency of selecting a REV or the MBR jumps are set to 3%. It is usually a good idea to keep those frequencies low. Indeed, REV and MBR are efficient in producing high scoring structure but computationally costly compared to classical MCMC jumps. We select the Koivisto prior `prior.choice = 2`.
+
+```{r, eval=FALSE}
+mcmc.out.asia <- mcmcabn(score.cache = bsc.compute.asia,
+                         score = "mlik",
+                         data.dists = dist.asia,
+                         max.parents = 2,
+                         mcmc.scheme = c(1000,99,10000),
+                         seed = 42,
+                         verbose = FALSE,
+                         start.dag = "random",
+                         prob.rev = 0.03,
+                         prob.mbr = 0.03, 
+                         prior.choice = 2)
+```
+
+The function `mcmcabn()` returns a list with multiple entries: 
+
+- *dags* is the list of sampled DAGs.
+- *scores* is the list of DAGs scores.
+- *alpha* is the acceptance probability of the Metropolis-Hasting sampler.
+- *method* is the algorithm chosen for the index MCMC step.
+- *rejection* if an MCMC jumps is rejected or not.
+- *iterations* is the total number of MCMC iterations.
+- *thinning* is the number of thinned steps for one returned MCMC jump
+- *burnin* is the length of the burn-in phase.
+- *data.dist* is the list giving the distribution for each node in the network.
+
+The object `mcmc.out` is of class `mcmcabn`. We can check that we reach the maximum possible posterior DAG score even with a small number of MCMC steps. To do so we use an exact search from Koivisto 2004 implemented in `mostprobable()` from `abn`.
+
+```{r, echo=FALSE}
+##to speed up building of the vignette, we store the output
+data("mcmc_run_asia")
+```
+
+```{r}
+#maximum score get from the MCMC sampler
+max(mcmc.out.asia$scores)
+
+#maximum scoring network using exact search (not MCMC based) 
+dag <- mostprobable(score.cache = bsc.compute.asia)
+fitabn(dag.m = dag,data.df = asia, data.dists = dist.asia)$mlik
+```
+
+One can plot the output using the *plot()*. On the graph below, one can see the trace plot of the posterior structure score. The dashed red line is the maximum reached score (as expected = -11151). The coloured dots on the trace plot indicate when different methods have been used. The densities on the left represent the relative occurring frequencies of the methods. 
+
+```{r}
+plot(mcmc.out.asia)
+```
+
+One can also plot the cumulative best score over the MCMC steps. On this graph, one can see the cumulated maximum posterior structure's score (as expected = -11151). The dashed red line is the maximum reached score. The coloured dots on the trace plot indicate when different methods have been used.
+
+```{r}
+plot(mcmc.out.asia, max.score = TRUE)
+```
+
+One can also print the summary of the MCMC run:
+
+```{r}
+summary(mcmc.out.asia)
+```
+This function return some MCMC diagnostics and descriptive metrics.
+
+The main advantage of computing MCMC samples from the posterior is that we can structuraly query them. Hence we account for the uncertainty in the structures through Bayesian model averaging. In practice, we compute the probabilities of the arcs in the DAG or the probability of a given part of a structure. Below is displayed the individual frequencies of the arcs.
+
+```{r}
+query(mcmcabn = mcmc.out.asia)
+```
+
+The `query()` function takes formula statements. So it is possible to explicitly query: **what is the probability of LungCancer node being children of the Smoking node?**
+
+```{r}
+query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking)
+```
+
+This means that an arrow from Smoking to LungCancer appears in `r query(mcmcabn = mcmc.out.asia, formula = ~LungCancer|Smoking)*100`% of the sampled DAGs. 
+
+One can also ask more complicated structural requests. If we want to know **what is the probability of Smoking node being parent of both LungCancer and Bronchitis node?**
+
+```{r}
+query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking + Bronchitis|Smoking)
+```
+
+It means that an arrow from Smoking to LungCancer **and** an arrow from Smoking to Bronchitis appears in `r query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking+Bronchitis|Smoking)*100`% of the sampled DAGs. This probability cannot be read from the matrix above. Indeed, it is a structural statement. 
+
+If one want to query positive and negative statements such as **What is the probability of previous statement when there is no arc from Smoking to Tuberculosis and no arc from Bronchitis to XRay?**
+
+```{r}
+query(mcmcabn = mcmc.out.asia ,formula = ~LungCancer|Smoking + Bronchitis|Smoking - Tuberculosis|Smoking - XRay|Bronchitis)
+```
+
+So essentially zero! 
+
+### Formula statement: tutorial
+
+The **formula** statement has been designed to ease querying over the MCMC samples. Hence, without explicitly 
+writing an adjacency matrix (which can be painful when the number of variables 
+increases). The `formula` argument can be provided using typically a formula like:
+~ node1|parent1:parent2 + node2:node3|parent3. The formula statement has to 
+start with `~`. In this example, node1 has two parents (parent1 and parent2). 
+node2 and node3 have the same parent3. The parents names have to exactly match 
+those given in `data.dist`. `:` is the separator between either children or parents, 
+`|` separates children (left side) and parents (right side), `+` separates 
+terms, `.` replaces all the variables in name. Then, the arrows go from the left to the right side of the formula. Additionally, when one want to exclude an arc simply put `-` in front of that statement. Then a formula like:
+~ -node1|parent1 excludes all DAGs that has an arc between parent1 and node1. Alternatively, one can query using an adjacency matrix. This matrix should have only: 0,1 and -1. the 1 indicates the requested arcs, the -1 the excluded and the 0 all other entries that are not subject to constraints. The rows indicate the set of parents of the index nodes. The order of rows and columns should be the same as the ones used in the `mcmcabn()` function in the `data.dist` argument. The matrix should not be named but it should be squared.
+
+## Technical fundations
+
+*Note: The terms: Bayesian networks, networks, structures and graphs are considered as synonyms.*
+
+This part aimed at describing the implemented methodology in `mcmcabn`. The rational for *mcmcabn* methodology is that MCMC over DAGs allow the user to query the family of high scoring DAGs and then draw more general conclusion than using only one DAG. The rational for using structural algorithms for sampling the DAG space and not the classical node ordering MCMC described by Friedman and Koller (2003) is that it biased. Additionally, it is not transparent regarding the prior. One characteristic of systems epidemiology dataset is, that data are scarce then in a Bayesian setting the prior play a major role. Thus it is of high importance to be transparent about our prior belief.  Finally, structural approache allows user defined a tunable prior which is of great interest in an applied perspective.
+
+The three main problems addressed by this methodology are:
+
+### Selecting the most probable structure based on a cache of pre-computed scores
+
+MCMC over DAGs produces estimates of high scoring structures. The actual alternatives are the `mostproable()` (for exact search) or `search.heuristic()` (for approximate search) R functions in the `abn` R package for example. The former function performs an exact search but it is limited to 25 nodes DAGs. The latter performs approximate inference.
+
+### Controlling for overfitting
+
+Classically, one want to select the single most robust DAG, which can then be used for prediction or inference. A major concern in Bayesian network modelling is controlling overfitting. To this end, it is advised to perform parametric or non parametric bootstrapping in generating samples from a chosen DAG structure or from the data. Then determining which subset of this selected structure is supported by the observed data. One can control for overfitting using `mcmcabn` R package. Indeed, it returns the set of highly supported structures with their individual support. Inspecting them allows user to make general claim about individual arc support.
+
+
+### Marginalizing relationship of interest over nuisance dependencies
+
+Sampling from the posterior distribution of structure could be very useful in an applied perspective to avoid reducing the richness of Bayesian network modelling to only **one** structure. Indeed, it allows the user to quantify the marginal impact of relationships of interest by marginalising out over structures or nuisance dependencies. Hence accounting for the uncertainty in the structures through Bayesian model averaging. Structural MCMC seems a very elegant and natural way to estimate the *true* marginal impact, so one can determine if it's magnitude is big enough to consider as a worthwhile intervention. 
+
+## Posterior distribution of the structures
+
+Form a mathematical perspective, one wants to sample over all possible structures in moving from structures to
+structures according to its support by the data. The posterior distribution of the structures is given by:
+
+$$p(G|D) = \frac{p(G, D)}{p(D)} = \frac{p(D|G)p(G)}{z^*}$$
+
+Where $G$ is a Bayesian network, $D$ the data and $z^*$ is a normalization factor. In a score based approach, the likelihood i.e. $p(D|G)$ are precisely the pre-computed scores. In `mcmcabn` they have been pre-computed using `abn` and stored in a cache of scores. Once one get an estimate of the posterior distribution, one can compute the posterior probability of any structural feature ($f$) from an MCMC sample by
+
+$$E[f|D] \approx \frac{1}{S} \sum_{s=1}^{S}f(G^s), \text{ where } G^s \sim p(G|D)$$
+
+where $f$ is any structural query (`formula` statement in the `query()` function) and $S$ is the set of visited structures $G$.
+
+
+Classically, structural MCMC is done using the algorithm described by Madigan and York (1995) and Giudici and Castelo (2003). It is called the Monte Carlo Markov Chain Model Choice ((MC)$^3$). It is an algorithm based on a single edge move: deletion, addition or reversal. This algorithm is known to be slow in mixing and easily stuck in local maxima. Multiple updates have been proposed. The idea is to perform a more drastic change in the proposed DAG in order to cross low probability regions more easily. 
+
+Friedman and Koller (2003) proposed the order MCMC. This MCMC scheme acts on the node order, improving a lot the convergence of the algorithm. However, this algorithm is biased as a given DAG may belong to a different order. A solution has been proposed by Kuipers and Moffa (2017). It acts on the ordered partitions, then makes DAG having a unique representation. This algorithm is implemented in the R package [BiDAG](https://CRAN.R-project.org/package=BiDAG). Goudie and Mukherjee (2016) proposed a Gibbs sampling approach. Finaly, Grzegorczyk and Husmeier (2008) and Su and Borsuk (2016) proposed two drastic MCMC moves. They are implemented in this R package.
+
+### Algorithms
+
+Two structurally, prior transparent large scale moves have been proposed: the new edge reversal move (REV) and the Markov blanket resampling (MBR). The former advocates to make a reversal move in resampling the parent set. The classical reversal move depends on the global configuration of the parents and children, and then fails to propose MCMC jumps that produces valid but very different DAGs in a unique move. It is known to be unbiased but the assumption of ergodicity does not necessarily hold. Then it has to be mixed with (MC)$^3$ moves. In the MBR the same idea is applied but to the entire Markov blanket of a randomly chosen node.
+
+We believe that having those three algorithms in a unique function with user adjustable relative frequencies leads to better results than indiviudal implementations. Those three algorithms work very differently. The (MC)$^3$ is very stable and samples efficiently the nearby region. The REV and MBR potentially produce large scale MCMC jumps but differently and possibly complementary.
+
+The general method is the Metropolis Hasting algorithm. Essentially, it is a sequential application of two steps:
+
+1. a new DAG is proposed from some proposal distribution Q
+2. the proposed DAG is accepted with some acceptance probability A
+
+The distribution Q has to be smart. The closer it is from the posterior the faster will the algorithm converge. In order to compute the acceptance probability A one needs to compute the posterior probability of each DAG. In this step, the prior on the index structure plays a major role.
+
+### Priors
+
+Three priors are implemented in the `mcmcabn` R package. The parameter `prior.choice` determines the prior used within each individual node for a given choice of parent combination. In Koivisto and Sood (2004) p.554 a form of prior, called the Koivisto prior, is used which assumes that the prior probability for parent combinations comprising the same number of parents are all equal. 
+
+Explicitly, the Koivisto prior is given by
+
+$$p(G) = \frac{1}{z}\prod_{n=1}^N {N-1 \choose |G_n|}^{-1}$$
+where $N$ is the total number of nodes and $|G_n|$ is the cardinality of the $n$th node (i.e. the number of parents). As we are in a MCMC setting and we will compute an Hasting ratio, the normalizing constant $z$ will cancel out.
+
+Note that this prior favours parent combinations with either very low or very high cardinalities which may not be appropriate. This prior is used when `prior.choice = 2`. 
+
+When `prior.choice = 1` an uninformative prior is used where parent combinations of all cardinalities are equally likely. 
+
+When `prior.choice = 3` a user defined prior is used, defined by `prior.dag`. It is given by an adjacency matrix (squared and same size as number of nodes) where entries ranging from zero to one give the user prior belief. An hyper parameter defining the global user belief in the prior is given by `prior.lambda`. In the vein of Werhli and Husmeier (2007) we defined the biological prior knowledge matrix $B$ where the rows are the parents set and the columns are the children, each entries $B_{ij} \in [0,1]$ is such that:
+
+- $B_{ij}$ = 0.5, indicates no prior knowledge about the presence or absence of an arc between node i and j.
+- $B_{ij} \in [0,0.5[$ indicates a prior belief that there is no arc between node i and j. The evidence get stronger as $B_{ij}$ get closer to 0.
+- $B_{ij} \in ]0.5,1]$ indicates a prior belief that there is an arc between node i and j. The evidence get stronger as $B_{ij}$ get closer to 1.
+
+Such a matrix is still not a prior as we need to introduce a proper normalization procedure. To do so, let us define the energy of a structure as
+
+$$E(G) = \sum_{i,j=1}^N |B_{i,j} −G_{i,j}|$$
+
+The energy $E$ is zero for a perfect match between the prior knowledge $B$ and the actual network $G$, while increasing values of $E$ indicates an increasing divergence between $B$ and $G$. Following, Imoto et al. (2003) we define the prior belief on graph $G$ by
+
+$$p(G|\beta) = \frac{\exp({-\lambda E(G)})}{z^*}$$
+where $z^*$ is a normalizing constant and $\lambda$ is an hyperparameter defined by `prior.lambda`. Again, as we are in a MCMC setting and we will compute an Hasting ratio, the normalizing constant will cancelled out. 
+
+In statistical physics, in a Gibbs distribution, the hyperparameter $\lambda$ is the inverse of temperature. It can be interpreted as a proxy indicating the strength of the influence of the prior over the data. Thus the strength of the user belief in the given prior. For $\lambda \rightarrow 0$ the prior distribution becomes flatter then uninformative about the structure. Inversely, for $\lambda \rightarrow \infty$, the prior distribution becomes sharply peaked at the network with the lowest energy.
+
+# References
+
+* Madigan, D. and York, J. (1995) "Bayesian graphical models for discrete data". International Statistical Review, 63:215–232.
+* Giudici, P. and Castelo, R. (2003). "Improving Markov chain Monte Carlo model search for data
+mining". Machine Learning, 50:127–158.
+* Kratzer, G. and Furrer, R. (2016) "Is a single unique Bayesian network enough to accurately represent your data?". arXiv preprint arXiv:1902.06641.
+* Friedman, N. and Koller, D. (2003). "Being Bayesian about network structure". A Bayesian approach
+to structure discovery in Bayesian networks. Machine Learning, 50:95–125, 2003.
+* Grzegorczyk, M. and Husmeier, D. "Improving the structure MCMC sampler for Bayesian networks by introducing a new edge reversal move", Machine Learning, vol. 71(2-3), pp. 265, 2008.
+* Su, C. and Borsuk, M. E. "Improving structure MCMC for Bayesian networks through Markov blanket resampling", The Journal of Machine Learning Research, vol. 17(1), pp. 4042-4061, 2016.
+* Koivisto, M. V. (2004). Exact Structure Discovery in Bayesian Networks, Journal of Machine Learning Research, vol 5, 549-573.
+* Werhli, A. V., and Husmeier, D. (2007). "Reconstructing gene regulatory networks with Bayesian networks by combining expression data with multiple sources of prior knowledge". Statistical Applications in Genetics and Molecular Biology, 6 (Article 15).
+* Imoto, S., Higuchi, T., Goto, T., Tashiro, K., Kuhara, S., and Miyano, S. (2003). Using Bayesian networks for estimating gene networks from microarrays and biological knowledge. In Proceedings of the European Conference on Computational Biology.
+* Goudie, R. J., and Mukherjee, S. (2016). A Gibbs Sampler for Learning DAGs. Journal of machine learning research: JMLR, 17(30), 1-39.
+* Kuipers, J. and Moffa, G. (2017). Partition MCMC for Inference on Acyclic Digraphs, Journal of the American Statistical Association, 112:517, 282-299, DOI: 10.1080/01621459.2015.1133426
+* Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journal of Statistical Software, 35(3), 1 - 22. doi:http://dx.doi.org/10.18637/jss.v035.i03.
