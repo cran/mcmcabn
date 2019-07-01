@@ -161,7 +161,7 @@ max(mcmc.out.asia$scores)
 
 #maximum scoring network using exact search (not MCMC based) 
 dag <- mostprobable(score.cache = bsc.compute.asia)
-fitabn(dag.m = dag,data.df = asia, data.dists = dist.asia)$mlik
+fitabn(object = dag,data.df = asia, data.dists = dist.asia)$mlik
 ```
 
 One can plot the output using the *plot()*. On the graph below, one can see the trace plot of the posterior structure score. The dashed red line is the maximum reached score (as expected = -11151). The coloured dots on the trace plot indicate when different methods have been used. The densities on the left represent the relative occurring frequencies of the methods. 
@@ -323,4 +323,4 @@ to structure discovery in Bayesian networks. Machine Learning, 50:95–125, 2003
 * Imoto, S., Higuchi, T., Goto, T., Tashiro, K., Kuhara, S., and Miyano, S. (2003). Using Bayesian networks for estimating gene networks from microarrays and biological knowledge. In Proceedings of the European Conference on Computational Biology.
 * Goudie, R. J., and Mukherjee, S. (2016). A Gibbs Sampler for Learning DAGs. Journal of machine learning research: JMLR, 17(30), 1-39.
 * Kuipers, J. and Moffa, G. (2017). Partition MCMC for Inference on Acyclic Digraphs, Journal of the American Statistical Association, 112:517, 282-299, DOI: 10.1080/01621459.2015.1133426
-* Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journal of Statistical Software, 35(3), 1 - 22. doi:http://dx.doi.org/10.18637/jss.v035.i03.
+* Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journal of Statistical Software, 35(3), 1 - 22. \doi{http://dx.doi.org/10.18637/jss.v035.i03.}

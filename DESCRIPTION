@@ -1,6 +1,6 @@
 Package: mcmcabn
 Title: Flexible Implementation of a Structural MCMC Sampler for DAGs
-Version: 0.1
+Version: 0.2
 Authors@R: c(person("Gilles", "Kratzer", role = c("aut", "cre"),
              email = "gilles.kratzer@math.uzh.ch",
              comment = c(ORCID = "0000-0002-5929-8935")),
@@ -20,8 +20,8 @@ URL: https://www.math.uzh.ch/pages/mcmcabn/
 BugReports: https://git.math.uzh.ch/gkratz/mcmcabn/issues
 RoxygenNote: 6.1.1
 NeedsCompilation: no
-Packaged: 2019-03-08 08:42:10 UTC; Kratzer
+Packaged: 2019-07-01 16:17:23 UTC; Kratzer
 Author: Gilles Kratzer [aut, cre] (<https://orcid.org/0000-0002-5929-8935>),
   Reinhard Furrer [ctb] (<https://orcid.org/0000-0002-6319-2332>)
 Repository: CRAN
-Date/Publication: 2019-03-08 17:10:03 UTC
+Date/Publication: 2019-07-01 19:00:03 UTC

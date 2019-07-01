@@ -178,7 +178,7 @@ REV <- function(n.var, dag.tmp, max.parents, sc, score.cache, score, verbose) {
 
                   ############################## Acceptance probability
 
-                  score.A <- n.edges/n.edges.tilde * exp(z.star.x.i.M.dot - z.star.x.j.M.dot + z.x.j.M.cross - z.x.j.M.cross)
+                  score.A <- n.edges/n.edges.tilde * exp(z.star.x.i.M.dot - z.star.x.j.M.dot + z.x.j.M.cross - z.x.i.M.tilde.cross)
                   A <- min(1, score.A)
 
                   if (rbinom(n = 1, size = 1, prob = A) == 1) {

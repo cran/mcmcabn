@@ -84,7 +84,7 @@ max(mcmc.out.asia$scores)
 
 #maximum scoring network using exact search (not MCMC based) 
 dag <- mostprobable(score.cache = bsc.compute.asia)
-fitabn(dag.m = dag,data.df = asia, data.dists = dist.asia)$mlik
+fitabn(object = dag,data.df = asia, data.dists = dist.asia)$mlik
 
 ## ------------------------------------------------------------------------
 plot(mcmc.out.asia)

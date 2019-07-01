@@ -10,7 +10,7 @@
     if (is.null(score.cache))
         stop("A cache of score should be provided. You can produce it using the R package abn.")
 
-    if (max(rowSums(score.cache$node.defn)) < max.parents)
+    if (max(rowSums(score.cache$node.defn)) > (max.parents+1))
         stop("Check max.parents. It should be the same as the one used in abn::buildscorecache() R function")
 
     if (length(mcmc.scheme) != 3)
@@ -224,4 +224,18 @@ range01 <- function(x) {
 
 is.integer0 <- function(x) {
     is.integer(x) && length(x) == 0L
+}
+
+##-------------------------------------------------------------------------
+## scoring DAGs
+##-------------------------------------------------------------------------
+
+score.dag <- function(dag,bsc.score,sc){
+  n.var <- dim(dag)[1]
+  score <- 0
+  for (a in 1:n.var) {
+    sc.tmp <- sc[bsc.score$children == a, ]
+    score <- sum(min(sc.tmp[(apply(sc.tmp, 1, function(x) identical(unname(x[1:n.var]), unname(dag[a,])))), n.var + 1]), score)
+  }
+  return(score)
 }

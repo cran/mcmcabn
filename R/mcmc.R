@@ -62,20 +62,21 @@ mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.p
 
     if (is.character(start.dag) && start.dag == "hc"){
 
-      start.dag <- search.heuristic(score.cache,
-                       score,
-                       data.dists,
-                       max.parents,
+      start.dag <- searchHeuristic(score.cache = score.cache,
+                       score =  score,
                        num.searches = 100,
                        max.steps = 500,
-                       seed,
-                       verbose,
+                       seed = seed,
+                       verbose = verbose,
                        start.dag = NULL,
                        dag.retained = NULL,
                        dag.banned = NULL,
                        algo = "hc",
                        tabu.memory = 10,
-                       temperature = 0.9)$dag
+                       temperature = 0.9)
+
+      start.dag <- start.dag[["dags"]][[which.max(x = unlist(start.dag$scores))]]
+
     }
 
     if (is.matrix(start.dag)) {
@@ -148,7 +149,7 @@ mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.p
             if (verbose) {
                 print("MBR move")
             }
-            out <- MBR(n.var, (dag.tmp), max.parents, sc, score.cache, score, verbose)
+            out <- MBR(n.var, dag.tmp, max.parents, sc, score.cache, score, verbose)
             dag.tmp <- out$dag.tmp
             score <- out$score
         })

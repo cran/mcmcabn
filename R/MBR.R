@@ -252,27 +252,32 @@ MBR <- function(n.var, dag.tmp, max.parents, sc, score.cache, score, verbose) {
 
                 ############################## Acceptance probability
 
+                score.MBR <- score.dag(dag = dag.MBR,bsc.score = score.cache,sc = sc)
+                #score.A <- exp(z.i.G.0 - z.star.i.G.prime.0 + sum(score.G) - sum(score.G.prime))
+                score.A <- exp(- score + score.MBR)
 
-                score.A <- exp(z.i.G.0 - z.star.i.G.prime.0 + sum(score.G) - sum(score.G.prime))
+
                 A <- min(1, score.A)
 
 
                 if (rbinom(n = 1, size = 1, prob = A) == 1) {
-                  rejection <- 1
+                  rejection <- 0
                   dag.tmp <- dag.MBR
-                  score.MBR <- 0
-                  for (a in 1:n.var) {
-                    sc.tmp <- sc[score.cache$children == a, ]
-                    score.MBR <- sum(min(sc.tmp[(apply(sc.tmp, 1, function(x) identical(unname(x[1:n.var]), unname(dag.tmp[a,
-                      ])))), n.var + 1]), score.MBR)
-                  }
+                  #score.MBR <- 0
+                  # for (a in 1:n.var) {
+                  #   sc.tmp <- sc[score.cache$children == a, ]
+                  #   score.MBR <- sum(min(sc.tmp[(apply(sc.tmp, 1, function(x) identical(unname(x[1:n.var]), unname(dag.tmp[a,
+                  #     ])))), n.var + 1]), score.MBR)
+                  # }
                   score <- score.MBR
+
+
                 }
             }
         }  #EOIF
     if (is.null(A)) {
         A <- 0
     }
-    ############################## Return
+    ############################## Return ##score.MBR <- score
     return(list(dag.tmp = dag.tmp, score = score, alpha = A, rejection = rejection))
 }  #EOF
