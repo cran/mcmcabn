@@ -4,10 +4,10 @@
 
 \title{List of files to reproduce examples \code{mcmcabn} library.}
 
-\description{10^5 MCMC runs with 1000 burn-in runs from the asia synthetic dataset from Lauritzen and Spiegelhalter (1988) provided by Scutari (2010). Named list of distributions and pre-computed scores.
+\description{10^5 MCMC runs with 1000 burn-in runs from the asia synthetic dataset from Lauritzen and Spiegelhalter (1988) provided by Scutari (2010). A named list of distributions and pre-computed scores.
 }
 
-     \usage{mcmc_run_asia}
+     \usage{data("mcmc_run_asia")}
 
 \format{
      The data contains an object of class mcmcabn and a cache of score computed using
@@ -19,9 +19,9 @@
      }}
 
 \examples{
-\donttest{
+\dontrun{
 ## This data set was generated using the following code:
-library(bnlearn) #for the dataset
+data(asia, package='bnlearn') #for the dataset
 library(abn) #for the cache of score function
 
 #renaming columns of the dataset

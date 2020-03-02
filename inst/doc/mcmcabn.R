@@ -22,7 +22,7 @@ options(digits = 3)
 library(mcmcabn)
 
 ## ---- warning = FALSE, message = FALSE-----------------------------------
-library(bnlearn) #for the dataset
+data(asia, package='bnlearn') #for the dataset
 library(abn) #to pre-compute the scores 
 library(ggplot2) #plotting
 library(ggpubr) #plotting

@@ -5,7 +5,7 @@
 ##-------------------------------------------------------------------------
 
 .tests.mcmcabn <- function(score.cache, data.dists, max.parents, mcmc.scheme, seed, verbose, start.dag, prior.dag, prior.lambda,
-    prob.rev, prob.mbr, prior.choice) {
+    prob.rev, prob.mbr, prior.choice,heating) {
     # start tests
     if (is.null(score.cache))
         stop("A cache of score should be provided. You can produce it using the R package abn.")
@@ -54,6 +54,10 @@
 
     if (is.matrix(prior.dag) && dim(prior.dag)[1] != length(data.dists))
         stop("prior.dag should be a squared matrix with dimension equal to the number of variables.")
+
+
+  if(heating<0 | !is.numeric(heating))
+    stop("heating parameter shoud be between a positive real number. One is neutral. Smaller than one is heating up. Larger than one indicates the number of steps when a linearly decreased heating scheme should be performed.")
 }
 
 ##-------------------------------------------------------------------------
@@ -209,8 +213,10 @@ descendents <- function(nodes, dag) {
 ##-------------------------------------------------------------------------
 
 range01 <- function(x) {
-    (x - min(x))/(max(x) - min(x))
-}
+  if(length(x)==1){return(1)}
+  if(length(x)==2){return(x-min(x))}else{
+    return((x - min(x))/(max(x) - min(x)))
+}}
 
 ##-------------------------------------------------------------------------
 ## not in function
@@ -234,8 +240,14 @@ score.dag <- function(dag,bsc.score,sc){
   n.var <- dim(dag)[1]
   score <- 0
   for (a in 1:n.var) {
-    sc.tmp <- sc[bsc.score$children == a, ]
+    sc.tmp <- sc[bsc.score$children == a, ,drop=FALSE]
     score <- sum(min(sc.tmp[(apply(sc.tmp, 1, function(x) identical(unname(x[1:n.var]), unname(dag[a,])))), n.var + 1]), score)
   }
   return(score)
 }
+
+##-------------------------------------------------------------------------
+## Raising negative numbers to a fractional exponent
+##-------------------------------------------------------------------------
+
+exponent <- function(a, pow) (abs(a)^pow)*sign(a)

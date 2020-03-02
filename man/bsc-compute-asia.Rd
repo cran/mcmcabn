@@ -16,10 +16,10 @@
 
 \examples{
 ## This data set was generated using the following code:
-library(bnlearn) #for the dataset
-library(abn) #for the cache of score function
+data(asia, package='bnlearn') # for the dataset
+library("abn")     # for the cache of score function
 
-#renaming columns of the dataset
+# Renaming columns of the dataset
 colnames(asia) <- c("Asia",
   "Smoking",
   "Tuberculosis",
@@ -29,21 +29,9 @@ colnames(asia) <- c("Asia",
   "XRay",
   "Dyspnea")
 
-#lets define the distribution list
-dist.asia <- list(Asia = "binomial",
-            Smoking = "binomial",
-            Tuberculosis = "binomial",
-            LungCancer = "binomial",
-            Bronchitis = "binomial",
-            Either = "binomial",
-            XRay = "binomial",
-            Dyspnea = "binomial")
-
 bsc.compute.asia <- buildscorecache(data.df = asia,
                                  data.dists = dist.asia,
                                  max.parents = 2)
-
-
 }
 
 \keyword{datasets}

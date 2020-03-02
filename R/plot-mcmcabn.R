@@ -3,7 +3,7 @@
 plot.mcmcabn <- function(x, max.score = FALSE, ...) {
 
     # utils::globalVariables(c('X','method' ,'scores')) utils::globalVariables(c('.', '%>%'))
-    dta <- data.frame(x[-1])
+    dta <- data.frame(x[2:4])
     dta$X <- 1:length(x$scores)
     max.score. <- max(x$scores)
 

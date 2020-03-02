@@ -15,34 +15,10 @@
      }}
 
 \examples{
-\donttest{
+\dontrun{
 ## This data set was generated using the following code:
-library(bnlearn) #for the dataset
+data(asia, package='bnlearn') #for the dataset
 library(abn) #for the cache of scores computing function
-
-#renaming columns of the dataset
-colnames(asia) <- c("Asia",
-  "Smoking",
-  "Tuberculosis",
-  "LungCancer",
-  "Bronchitis",
-  "Either",
-  "XRay",
-  "Dyspnea")
-
-#lets define the distribution list
-dist.asia <- list(Asia = "binomial",
-            Smoking = "binomial",
-            Tuberculosis = "binomial",
-            LungCancer = "binomial",
-            Bronchitis = "binomial",
-            Either = "binomial",
-            XRay = "binomial",
-            Dyspnea = "binomial")
-
-bsc.compute.asia <- buildscorecache(data.df = asia,
-                                 data.dists = dist.asia,
-                                 max.parents = 2)
 
 mcmc.out.asia <- mcmcabn(score.cache = bsc.compute.asia,
                   score = "mlik",

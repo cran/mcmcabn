@@ -9,16 +9,16 @@
      \usage{dist.asia}
 
 \format{
-     The data contains a cache of pre-computed scores with a maximum of two parents per node.
+     The dataset contains a list of named distribution used to analyse the asia dataset.
      \itemize{
      \item \code{dist.asia}: a named list giving the distribution for each node in the network.
      }}
 
 \examples{
 ## This data set was generated using the following code:
-library(bnlearn) #for the dataset
+data(asia, package='bnlearn') # for the dataset
 
-#renaming columns of the dataset
+# Renaming columns of the dataset
 colnames(asia) <- c("Asia",
   "Smoking",
   "Tuberculosis",
@@ -28,7 +28,7 @@ colnames(asia) <- c("Asia",
   "XRay",
   "Dyspnea")
 
-#lets define the distribution list
+# Defining the distribution list
 dist.asia <- list(Asia = "binomial",
             Smoking = "binomial",
             Tuberculosis = "binomial",

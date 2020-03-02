@@ -15,7 +15,7 @@ query(mcmcabn = NULL,
 
 \arguments{
   \item{mcmcabn}{object of class mcmcabn.}
-  \item{formula}{formula statement or adjacency matrix to query the MCMC samples, see details. If this argument is NULL, then the average arc-wise frequencies is reported.}
+  \item{formula}{formula statement or adjacency matrix to query the MCMC samples, see details. If this argument is \code{NULL}, then the average arc-wise frequencies is reported.}
   }
 
 \description{The function allows users to perform structural queries over MCMC samples produced by \code{mcmcabn}.
@@ -23,46 +23,45 @@ query(mcmcabn = NULL,
 
 \details{The query can be formulated using an adjacency matrix or a formula-wise expression.
 
-The adjacency matrix should be squared of dimension equal to the number of nodes in the networks. Their entries should be either 1,0 or -1. The 1 indicates the requested arcs, the -1 the excluded and the 0 all other entries that are not subject to query. The rows indicated the set of parents of the index nodes. The order of rows and column should be the same as the one used in the `mcmcabn()` function in the `data.dist` argument.
+The adjacency matrix should be squared of dimension equal to the number of nodes in the networks. Their entries should be either 1, 0, or -1. The 1 indicates the requested arcs, the -1 the excluded, and the 0 all other entries that are not subject to query. The rows indicated the set of parents of the index nodes. The order of rows and column should be the same as the one used in the \code{mcmcabn()} function in the \code{data.dist} argument.
 
-The formula statement has been designed to ease querying over the MCMC sample. It allows user to make complex queries without explicitly writing an adjacency matrix (which can be painful when the number of variables is large). The formula argument can be provided using typically a formula like:
-~ node1|parent1:parent2 + node2:node3|parent3. The formula statement has to start with `~`. In this example, node1 has two parents (parent1 and parent2). node2 and node3 have the same parent3. The parents names have to exactly match those given in name. `:` is the separator between either children or parents, `|` separates children (left side) and parents (right side), `+` separates
-terms, `.` replaces all the variables in name. Additional, when one want to exclude an arc simply put `-` in front of that statement. Then a formula like: ~ -node1|parent1 exclude all DAGs that have an arc between parent1 and node1.
+The formula statement has been designed to ease querying over the MCMC sample. It allows user to make complex queries without explicitly writing an adjacency matrix (which can be painful when the number of variables is large). The formula argument can be provided using a formula alike:
+\code{~ node1|parent1:parent2 + node2:node3|parent3}. The formula statement has to start with `~`. In this example, node1 has two parents (parent1 and parent2). node2 and node3 have the same parent3. The parents' names have to match those given in name exactly. `:` is the separator between either children or parents, `|` separates children (left side) and parents (right side), `+` separates
+terms, `.` replaces all the variables in name. Additional, when one wants to exclude an arc simply put `-` in front of that statement. Then a formula alike: ~ -node1|parent1 exclude all DAGs that have an arc between parent1 and node1.
 
-If the formula argument is not provided the function returns the average support of all individual arcs using a named matrix.
+If the formula argument is not provided, the function returns the average support of all individual arcs using a named matrix.
 }
 
 \value{A frequency for the requested query. Alternatively a matrix with arc-wise frequencies.}
 
 \author{Gilles Kratzer}
 
-\references{Kratzer, G. Furrer, R.  "Is a single unique Bayesian network enough to accurately represent your data?". arXiv preprint arXiv:1902.06641.
+\references{Kratzer, G., Furrer, R.  "Is a single unique Bayesian network enough to accurately represent your data?". arXiv preprint arXiv:1902.06641.
 
-Lauritzen S, Spiegelhalter D (1988). "Local Computation with Probabilities on Graphical Structures and their Application to Expert Systems (with discussion)". Journal of the Royal Statistical Society: Series B, 50(2):157–224.
+Lauritzen, S., Spiegelhalter, D. (1988). "Local Computation with Probabilities on Graphical Structures and their Application to Expert Systems (with discussion)". Journal of the Royal Statistical Society: Series B, 50(2):157–224.
 
-Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journal of Statistical Software, 35(3), 1 - 22. doi:http://dx.doi.org/10.18637/jss.v035.i03.
+Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journal of Statistical Software, 35(3), 1–22. doi:http://dx.doi.org/10.18637/jss.v035.i03.
 }
 
 \examples{
-## Example from the asia dataset from Lauritzen and Spiegelhalter (1988) provided by Scutari (2010)
+## Example from the asia dataset from Lauritzen and Spiegelhalter (1988)
+## provided by Scutari (2010)
 data("mcmc_run_asia")
 
-##return a named matrix with individual arc support
+## Return a named matrix with individual arc support
 query(mcmcabn = mcmc.out.asia)
 
-## what is the probability of LungCancer node being children of the Smoking node?
+## What is the probability of LungCancer node being children of the Smoking node?
 query(mcmcabn = mcmc.out.asia,formula = ~LungCancer|Smoking)
 
-## what is the probability of Smoking node being parent of
+## What is the probability of Smoking node being parent of
 ## both LungCancer and Bronchitis node?
 query(mcmcabn = mcmc.out.asia,
-formula = ~ LungCancer|Smoking+Bronchitis|Smoking)
+      formula = ~ LungCancer|Smoking+Bronchitis|Smoking)
 
-## what is the probability of previous statement,
-## when there is no arc from Smoking to Tuberculosis and from Bronchitis to XRay?
+## What is the probability of previous statement, when there
+## is no arc from Smoking to Tuberculosis and from Bronchitis to XRay?
 query(mcmcabn = mcmc.out.asia,
-formula = ~LungCancer|Smoking +
-Bronchitis|Smoking -
-Tuberculosis|Smoking -
-XRay|Bronchitis)
+      formula = ~LungCancer|Smoking + Bronchitis|Smoking -
+                  Tuberculosis|Smoking - XRay|Bronchitis)
 }

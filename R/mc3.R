@@ -1,4 +1,4 @@
-mc3 <- function(n.var, dag.tmp, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag, verbose) {
+mc3 <- function(n.var, dag.tmp, retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag, verbose, heating) {
 
     ## construction of neighbours list
     neighbours.list <- NULL
@@ -20,7 +20,7 @@ mc3 <- function(n.var, dag.tmp, max.parents, sc, score.cache, score, prior.choic
         ## Removal of an arc
         for (a in 1:n.var) {
             for (b in 1:n.var) {
-                if (dag.tmp[a, b] == 1) {
+                if (dag.tmp[a, b] == 1 && retain[a, b]!=1) {
                   tmp <- dag.tmp
                   tmp[a, b] <- 0
                   neighbours.list[[length(neighbours.list) + 1]] <- tmp
@@ -32,7 +32,7 @@ mc3 <- function(n.var, dag.tmp, max.parents, sc, score.cache, score, prior.choic
         ## Addition of an arc
         for (a in 1:n.var) {
             for (b in 1:n.var) {
-                if ((dag.tmp[a, b] == 0 & dag.tmp[b, a] == 0) & sum(dag.tmp[a, ]) <= (max.parents - 1)) {
+                if(((dag.tmp[a, b] == 0 & dag.tmp[b, a] == 0) & sum(dag.tmp[a, ]) <= (max.parents - 1)) && ban[a,b]!=1) {
                   tmp <- dag.tmp
                   # print(tmp)
                   tmp[a, b] <- 1
@@ -49,7 +49,7 @@ mc3 <- function(n.var, dag.tmp, max.parents, sc, score.cache, score, prior.choic
         ## Reversal of an arc
         for (a in 1:n.var) {
             for (b in 1:n.var) {
-                if (dag.tmp[a, b] == 1 & sum(dag.tmp[b, ]) <= (max.parents - 1)) {
+                if ((dag.tmp[a, b] == 1 & sum(dag.tmp[b, ]) <= (max.parents - 1)) && retain[a,b] && ban[b,a]!=1) {
                   tmp <- dag.tmp
                   tmp[a, b] <- 0
                   tmp[b, a] <- 1
@@ -133,22 +133,24 @@ mc3 <- function(n.var, dag.tmp, max.parents, sc, score.cache, score, prior.choic
                 prior.Gprime <- prod(1/choose(n = (n.var - 1), k = sum(dag.gprime[a, ])), prior.Gprime)
             }
 
-            sc.tmp <- sc[score.cache$children == a, ]
+            sc.tmp <- sc[score.cache$children == a,,drop = FALSE]
             score.G <- sum(min(sc.tmp[(apply(sc.tmp, 1, function(x) identical(unname(x[1:n.var]), unname(dag.tmp[a,
                 ])))), n.var + 1]), score.G)
             score.Gprime <- sum(min(sc.tmp[(apply(sc.tmp, 1, function(x) identical(unname(x[1:n.var]), unname(dag.gprime[a,
                 ])))), n.var + 1]), score.Gprime)
         }
 
-        # alpha <- min(exp((score.Gprime + log(prior.Gprime) + log(n.Gprime)) - ((score.G + log(prior.G)) + log(n.G))),1)
-        alpha <- min(exp(score.Gprime - score.G) * (n.G/n.Gprime) * (prior.Gprime/prior.G), 1)
-        if(!is.numeric(alpha)) alpha <- 0
 
+        score.Gprime.scaled <- score.dag(dag.gprime,score.cache,sc)
+        score.G.scaled <- score.dag(dag.tmp,score.cache,sc)
 
+        alpha <- min(exp( (score.Gprime.scaled - score.G.scaled) * (n.G/n.Gprime) * (prior.Gprime/prior.G)), 1)
+
+        if(!is.numeric(alpha) | is.nan(alpha)) alpha <- 0
 
         score <- score.G
 
-        if (!is.null(dag.gprime) && rbinom(n = 1, size = 1, prob = alpha) == 1) {
+        if (!is.null(dag.gprime) && runif(1)<exponent(alpha,heating)) {
             dag.tmp <- dag.gprime
             score <- score.Gprime
             rejection <- 0

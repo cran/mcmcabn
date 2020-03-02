@@ -24,7 +24,7 @@
 
 \description{Summary method for mcmcabn objects.}
 
-\details{The summary function for \code{mcmcabn} objects returns multiple summary metrics for assesing the quality of the MCMC run. Thinning is the number of thinned MCMC steps for one MCMC returned.}
+\details{The summary function for \code{mcmcabn} objects returns multiple summary metrics for assessing the quality of the MCMC run. Thinning is the number of thinned MCMC steps for one MCMC returned.}
 
 \value{This method prints: the number of burn-in steps, the number of MCMC steps, the thinning, the maximum achieved score, the empirical mean of the MCMC samples, the empirical standard deviation of the MCMC samples, the user defined quantiles of the posterior network score, the global acceptance rate, a table of the accepted and rejected moves in function of the methods used, the sample size adjusted for autocorrelation and the autocorrelations by lag.}
 
@@ -36,7 +36,8 @@ Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journ
 
 
 \examples{
-## Example from the asia dataset from Lauritzen and Spiegelhalter (1988) provided by Scutari (2010)
+## Example from the asia dataset from Lauritzen and Spiegelhalter (1988)
+## provided by Scutari (2010)
 #summary the MCMC run
 summary(mcmc.out.asia)
 }

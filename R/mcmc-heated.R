@@ -1,17 +1,19 @@
-################################################################################ mcmcabn.R --- Author : Gilles Kratzer Document created: 22/10/2019 -
+##############################################################################
+## mcmcabn.R --- Author : Gilles Kratzer Document created: 28/11/2019 -
 
 ##-------------------------------------------------------------------------
-## MCMC procedure
+## Coupled heated MCMC procedure
 ##-------------------------------------------------------------------------
 
-mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.parents = 1, mcmc.scheme = c(100, 1000,
-    1000), seed = 42, verbose = FALSE, start.dag = NULL, prior.dag = NULL, prior.lambda = NULL, prob.rev = 0.05, prob.mbr = 0.05, heating = 1,
+CoupledHeatedmcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.parents = 1, mcmc.scheme = c(100, 1000,
+    1000), seed = 42, verbose = FALSE, start.dag = NULL, prior.dag = NULL, prior.lambda = NULL, prob.rev = 0.05, prob.mbr = 0.05, heating = 1, n.chains = 4,
     prior.choice = 2) {
 
     #################################################### Tests
 
     .tests.mcmcabn(score.cache, data.dists, max.parents, mcmc.scheme, seed, verbose, start.dag, prior.dag, prior.lambda,
         prob.rev, prob.mbr, prior.choice,heating)
+  if(n.chains<2){stop("Coupled heated MCMC runs should have two chains at minimum.")}
 
     ## end of tests
 
@@ -32,15 +34,16 @@ mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.p
 
     prob.mc3 <- 1 - (prob.rev + prob.mbr)
 
-    heating.orig <- NULL
-
     ## output
     out.dags <- array(data = NA, dim = c(n.var, n.var, mcmc.scheme[1] + 1))
-    out.scores <- rep(NA, length = mcmc.scheme[1] + 1)
-    out.alpha <- rep(NA, length = mcmc.scheme[1] + 1)
-    out.method <- rep(NA, length = mcmc.scheme[1] + 1)
-    out.rejection <- rep(NA, length = mcmc.scheme[1] + 1)
-    out.heating <- rep(NA, length = mcmc.scheme[1] + 1)
+    out.scores <- array(data = NA, dim = c(mcmc.scheme[1] + 1))
+
+    out.scores.coupled <- array(data = NA, dim = c(mcmc.scheme[1] + 1, n.chains))
+
+    out.alpha <- array(data = NA, dim = c(mcmc.scheme[1] + 1))
+    out.method <- array(data = NA, dim = c(mcmc.scheme[1] + 1))
+    out.rejection <- array(data = NA, dim = c(mcmc.scheme[1] + 1))
+    heating.para <- array(data = NA, dim = c(n.chains))
 
     ## seeding
     set.seed(seed = seed)
@@ -129,17 +132,12 @@ mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.p
     ## scoring init
     score.init <- score.dag(dag.tmp,score.cache,sc)
 
-    ## heating scheme
-    if(is.numeric(heating) & heating>1){
-      heating.orig <- heating
-      heating <- 1/heating.orig
-    }
-
-
     ## out
     out.dags[, , 1] <- dag.tmp
 
     out.scores[1] <- score <- score.init
+
+    out.scores.coupled[1,] <- rep(score.init, n.chains)
 
     out.alpha[1] <- alpha <- 0
 
@@ -147,7 +145,10 @@ mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.p
 
     out.rejection[1] <- 0
 
-    out.heating[1] <- heating
+    for (j in 1:n.chains) {
+      heating.para[j] <- 1/(1+heating*(j-1))
+    }
+
 
     ## start mcmc search
     if (verbose)
@@ -155,48 +156,72 @@ mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.p
 
     j <- 1
 
+    tmp.dag <- array(data = NA, dim = c(n.var, n.var, n.chains))
+    tmp.scores <- array(data = NA, dim = c(n.chains))
+    tmp.alpha <- array(data = NA, dim = c(n.chains))
+    tmp.rejection <- array(data = NA, dim = c(n.chains))
+    tmp.method <- array(data = NA, dim = c(n.chains))
+
+#init
+    tmp.dag[,,] <- dag.tmp
+    tmp.scores[] <- score.init
 
     while (j <= mcmc.scheme[3]) {
 
         ## method choice:
 
+for (c in 1:n.chains) {
+
+  heating <- heating.para[c]
+  dag.tmp <- tmp.dag[,,c]
+  score <- tmp.scores[c]
+
+
+  #print(score)
         method.choice <- sample(x = c("MC3", "REV", "MBR"), size = 1, prob = c(prob.mc3, prob.rev, prob.mbr))
-
-        if(heating<1 & !is.null(heating.orig)){heating <-1/(heating.orig-j+1)}
-
 
         switch(method.choice, MC3 = {
             out <- mc3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
                 verbose, heating)
-            dag.tmp <- out$dag.tmp
-            score <- out$score
+            tmp.dag[,,c] <- out$dag.tmp
+            tmp.scores[c] <- out$score
         }, REV = {
             if (verbose) {
                 print("REV move")
             }
             out <- REV(n.var, (dag.tmp),retain, ban, max.parents, sc, score.cache, score, verbose, heating)
-            dag.tmp <- out$dag.tmp
-            score <- out$score
+            tmp.dag[,,c] <- out$dag.tmp
+            tmp.scores[c] <- out$score
         }, MBR = {
             if (verbose) {
                 print("MBR move")
             }
             out <- MBR(n.var, dag.tmp,retain, ban, max.parents, sc, score.cache, score, verbose, heating)
-            dag.tmp <- out$dag.tmp
-            score <- out$score
+            tmp.dag[,,c] <- out$dag.tmp
+            tmp.scores[c] <- out$score
         })
+}#eof: multiple heated chains
 
+        ## swap between two randomly chosen chains
+        rand.chains <- sample(x = 1:n.chains,2)
+
+        alpha <- min(exponent(exp(tmp.scores[rand.chains[1]] - tmp.scores[rand.chains[2]]),heating.para[rand.chains[1]]) * exponent(exp(tmp.scores[rand.chains[2]] - tmp.scores[rand.chains[1]]),heating.para[rand.chains[2]]),1)
+        if(is.nan(alpha)){alpha <- 0}
+
+if (runif(1)<(alpha)) {
+  tmp.dag[,,rand.chains[1]] <- tmp.dag[,,rand.chains[2]]
+  tmp.scores[rand.chains[1]] <- tmp.scores[rand.chains[2]]
+}
         j <- j + 1
     }  #EOF Burn in
 
-    out.scores[1] <- score
-    out.dags[, , 1] <- dag.tmp
+    out.scores[1] <- tmp.scores[1]
+
+    out.scores.coupled[1,] <- tmp.scores
+
+    out.dags[,,1] <- tmp.dag[,,1]
 
     ### EOF: Burn-in phase!
-
-    if(!is.null(heating.orig) & heating<1){
-      heating.orig <- round(1/heating)
-    }
 
     if (verbose)
         cat("Start MCMC search \n")
@@ -207,57 +232,94 @@ mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.p
         ## start blind search
         j <- 0
 
-        if(heating<1 & !is.null(heating.orig)){heating <- 1/(heating.orig-mcmc.search+1)}
 
         while (j <= mcmc.scheme[2]) {
 
-            method.choice <- sample(x = c("MC3", "REV", "MBR"), size = 1, prob = c(prob.mc3, prob.rev, prob.mbr))
+          method.choice <- sample(x = c("MC3", "REV", "MBR"), size = 1, prob = c(prob.mc3, prob.rev, prob.mbr))
+          tmp.method[] <- method.choice
+
+          for (c in 1:n.chains) {
+
+            heating <- heating.para[c]
+            dag.tmp <- tmp.dag[,,c]
+            score <- tmp.scores[c]
+
+
 
             switch(method.choice, MC3 = {
                 out <- mc3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
                   verbose, heating)
-                dag.tmp <- out$dag.tmp
-                score <- out$score
-                alpha <- out$alpha
-                rejection <- out$rejection
+                tmp.dag[,,c] <- out$dag.tmp
+                tmp.scores[c] <- out$score
+                #tmp.alpha[c] <- out$alpha
+                tmp.rejection[c] <- out$rejection
             }, REV = {
                 if (verbose) {
                   print("REV move")
                 }
                 out <- REV(n.var, (dag.tmp),retain, ban, max.parents, sc, score.cache, score, verbose, heating)
-                dag.tmp <- out$dag.tmp
-                score <- out$score
-                alpha <- out$alpha
-                rejection <- out$rejection
+                tmp.dag[,,c] <- out$dag.tmp
+                tmp.scores[c] <- out$score
+                #tmp.alpha[c] <- out$alpha
+                tmp.rejection[c] <- out$rejection
             }, MBR = {
                 if (verbose) {
                   print("MBR move")
                 }
                 out <- MBR(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, verbose, heating)
-                dag.tmp <- out$dag.tmp
-                score <- out$score
-                alpha <- out$alpha
-                rejection <- out$rejection
+                tmp.dag[,,c] <- out$dag.tmp
+                tmp.scores[c] <- out$score
+                #tmp.alpha[c] <- out$alpha
+                tmp.rejection[c] <- out$rejection
             })
+          }#eof: multiple heated chains
 
-            j <- j + 1
+            ## swap between two randomly chosen chains
+            rand.chains <- sample(x = 1:n.chains,2)
+
+            alpha <- min(exponent(exp(tmp.scores[rand.chains[1]] - tmp.scores[rand.chains[2]]),heating.para[rand.chains[1]]) * exponent(exp(tmp.scores[rand.chains[2]] - tmp.scores[rand.chains[1]]),heating.para[rand.chains[2]]),1)
+            if(is.nan(alpha)){alpha <- 0}
+
+
+                        if (runif(1)<(alpha)) {
+              storage.tmp1 <- tmp.dag[,,rand.chains[1]]
+              storage.tmp2 <-tmp.scores[rand.chains[1]]
+              storage.tmp3 <- tmp.method[rand.chains[1]]
+
+              tmp.dag[,,rand.chains[1]] <- tmp.dag[,,rand.chains[2]]
+              tmp.scores[rand.chains[1]] <- tmp.scores[rand.chains[2]]
+              tmp.method[rand.chains[1]] <- tmp.method[rand.chains[2]]
+
+               tmp.dag[,,rand.chains[2]] <- storage.tmp1
+               tmp.scores[rand.chains[2]] <- storage.tmp2
+               tmp.method[rand.chains[2]] <- storage.tmp3
+
+              #rejection <- 0
+            }
+
+          j <- j + 1
         }  #EOF mcmc search
 
-        out.dags[, , mcmc.search + 1] <- dag.tmp
 
-        out.scores[mcmc.search + 1] <- score
+        out.dags[, , mcmc.search + 1] <- tmp.dag[,,1]
+
+        out.scores[mcmc.search + 1] <- tmp.scores[1]
 
         out.alpha[mcmc.search + 1] <- alpha
 
-        out.method[mcmc.search + 1] <- method.choice
+        out.method[mcmc.search + 1] <- tmp.method[1]
 
-        out.rejection[mcmc.search + 1] <- rejection
+        out.rejection[mcmc.search + 1] <- tmp.rejection[1]
 
-        out.heating[mcmc.search + 1] <- heating
+        out.scores.coupled[mcmc.search + 1,] <- tmp.scores
+
+        out.scores.coupled <- data.frame(out.scores.coupled)
+
+        names(out.scores.coupled) <- 1:n.chains
 
     }  #EOF mcmc search
     out <- list(dags = out.dags, scores = out.scores, alpha = out.alpha, method = out.method, rejection = out.rejection,
-        iterations = mcmc.scheme[1] * (mcmc.scheme[2] + 1), thinning = mcmc.scheme[2], burnin = mcmc.scheme[3], data.dist = data.dists, heating = out.heating)
+        iterations = mcmc.scheme[1] * (mcmc.scheme[2] + 1), thinning = mcmc.scheme[2], burnin = mcmc.scheme[3], data.dist = data.dists, heating = heating.para, score.coupled = out.scores.coupled)
 
     class(out) <- "mcmcabn"
 

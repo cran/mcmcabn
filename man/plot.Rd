@@ -23,7 +23,7 @@
 \description{Generic function to plot \code{mcmcabn} objects.
 }
 
-\details{The plot function for mcmcabn objects is based on \pkg{ggplot2}, \pkg{ggpubr} and \pkg{cowplot} packages. By default it returns a trace plot with coloured points when MBR and REV methods have been used. It displays histograms on the right of the densities of (MC)^3, MBR and REV MCMC jumps respectively.}
+\details{The plot function for mcmcabn objects is based on \pkg{ggplot2}, \pkg{ggpubr} and \pkg{cowplot} packages. By default, it returns a trace plot with coloured points when MBR and REV methods have been used. It displays histograms on the right of the densities of (MC)^3, MBR and REV MCMC jumps respectively.}
 
 \author{Gilles Kratzer}
 
@@ -37,17 +37,18 @@ Alboukadel Kassambara (2018). ggpubr: 'ggplot2' Based Publication Ready Plots. R
 Claus O. Wilke (2019). cowplot: Streamlined Plot Theme and Plot Annotations for 'ggplot2'. R package version 0.9.4. https://CRAN.R-project.org/package=cowplot
 
 Data:
-Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journal of Statistical Software, 35(3), 1 - 22. doi:http://dx.doi.org/10.18637/jss.v035.i03.
+Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journal of Statistical Software, 35(3), 1-22. doi:http://dx.doi.org/10.18637/jss.v035.i03.
 }
 
 
 \examples{
-## Example from the asia dataset from Lauritzen and Spiegelhalter (1988) provided by Scutari (2010)
+## Example from the asia dataset from Lauritzen and Spiegelhalter (1988)
+## provided by Scutari (2010)
 data("mcmc_run_asia")
 
-#plot the mcmc run
+# plot the mcmc run
 plot(mcmc.out.asia)
 
-#plot cumulative max score
+# plot cumulative max score
 plot(mcmc.out.asia, max.score = TRUE)
 }

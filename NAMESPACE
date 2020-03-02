@@ -1,7 +1,9 @@
 export(mcmcabn,
+CoupledHeatedmcmcabn,
 query,
 plot.mcmcabn,
 summary.mcmcabn,
+print.summary.mcmcabn,
 print.mcmcabn
 )
        
@@ -14,8 +16,12 @@ print.mcmcabn
        importFrom(cowplot, ggdraw, axis_canvas, insert_yaxis_grob)
        importFrom(graphics, plot)
        importFrom(stats, as.formula, dist, quantile, sd)
+       importFrom("stats", "runif")
        
 #methods for class mcmcabn
 S3method(plot, mcmcabn)
 S3method(summary, mcmcabn)
 S3method(print, mcmcabn)
+
+#method for class summary.mcmcabn
+S3method(print, summary.mcmcabn) 
