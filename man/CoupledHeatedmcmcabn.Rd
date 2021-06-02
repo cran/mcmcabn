@@ -27,7 +27,7 @@ CoupledHeatedmcmcabn(score.cache = NULL,
                  }
 
 \arguments{
-  \item{score.cache}{output from \link[abn:build_score_cache]{buildscorecache} from the \code{abn} R package.}
+  \item{score.cache}{output from \link[abn:build_score_cache]{buildScoreCache} from the \code{abn} R package.}
   \item{score}{character giving which network score should be used to sample the DAGs landscape.}
 \item{data.dists}{a named list giving the distribution for each node in the network, see details.}
   \item{max.parents}{a constant giving the maximum number of parents allowed.}

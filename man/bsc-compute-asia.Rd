@@ -9,7 +9,7 @@
      \usage{bsc.compute.asia}
 
 \format{
-     The data contains a cache of pre-computed scores with a maximum of two parents per node using \link[abn:build_score_cache]{buildscorecache} from the \code{abn} R package.
+     The data contains a cache of pre-computed scores with a maximum of two parents per node using \link[abn:build_score_cache]{buildScoreCache} from the \code{abn} R package.
      \itemize{
      \item \code{bsc.compute.asia}: cache of score with a maximum of two parents per node.
      }}
@@ -29,7 +29,7 @@ colnames(asia) <- c("Asia",
   "XRay",
   "Dyspnea")
 
-bsc.compute.asia <- buildscorecache(data.df = asia,
+bsc.compute.asia <- buildScoreCache(data.df = asia,
                                  data.dists = dist.asia,
                                  max.parents = 2)
 }

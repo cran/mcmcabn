@@ -35,7 +35,7 @@ test_that("mc3",{
 
   out.sim.0 <- simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 1000,n.thin = 1,n.iter = 1000,data.param = 0.4*data.param, simulate = TRUE,seed = 132,verbose = FALSE)
 
-  bsc.compute.0 <- buildscorecache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
+  bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
 
   mc3.out <- mcmcabn(score.cache = bsc.compute.0,
                   score = "mlik",
@@ -49,8 +49,8 @@ test_that("mc3",{
                   prob.mbr = 0,
                   prior.choice = 1,heating = 0.5)
 
-  dag <- mostprobable(score.cache = bsc.compute.0,prior.choice = 1)
-  expect_equal(max(mc3.out$scores),fitabn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik)
+  dag <- mostProbable(score.cache = bsc.compute.0,prior.choice = 1)
+  expect_equal(max(mc3.out$scores),fitAbn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik)
 
   mc3.out <- mcmcabn(score.cache = bsc.compute.0,
                      score = "mlik",
@@ -64,8 +64,8 @@ test_that("mc3",{
                      prob.mbr = 0,
                      prior.choice = 2)
 
-  dag <- mostprobable(score.cache = bsc.compute.0,prior.choice = 2)
-  expect_equal(max(mc3.out$scores),fitabn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik, tol=0.0001)
+  dag <- mostProbable(score.cache = bsc.compute.0,prior.choice = 2)
+  expect_equal(max(mc3.out$scores),fitAbn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik, tol=0.0001)
 
   #test influence of user define prior
   data.param.eq <- matrix(data = 0,nrow = 5,ncol = 5)
@@ -119,7 +119,7 @@ test_that("REV",{
 
   out.sim.0 <- invisible(simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 1000,n.thin = 1,n.iter = 1000,data.param = 0.4*data.param, simulate = TRUE,seed = 132))
 
-  bsc.compute.0 <- buildscorecache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
+  bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
 
   mc3.out <- mcmcabn(score.cache = bsc.compute.0,
                      score = "mlik",
@@ -133,8 +133,8 @@ test_that("REV",{
                      prob.mbr = 0,
                      prior.choice = 1)
 
-  dag <- mostprobable(score.cache = bsc.compute.0,prior.choice = 1)
-  expect_equal(max(mc3.out$scores),fitabn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik)
+  dag <- mostProbable(score.cache = bsc.compute.0,prior.choice = 1)
+  expect_equal(max(mc3.out$scores),fitAbn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik)
 
   expect_silent(a<-mcmcabn(score.cache = bsc.compute.0,
                         score = "mlik",
@@ -161,7 +161,7 @@ test_that("REV",{
 
   out.sim.0 <- invisible(simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 1000,n.thin = 1,n.iter = 10,data.param = 0.4*data.param, simulate = TRUE,seed = 132))
 
-  bsc.compute.0 <- buildscorecache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
+  bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
 
   #
   start.m <- matrix(data = c(0,0,0,1,0,0,0,0,0),nrow = 3L,ncol = 3L,byrow = TRUE)
@@ -198,7 +198,7 @@ test_that("MBR",{
 
   out.sim.0 <- invisible(simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 1000,n.thin = 1,n.iter = 1000,data.param = 0.4*data.param, simulate = TRUE,seed = 132))
 
-  bsc.compute.0 <- buildscorecache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
+  bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
 
   mc3.out <- mcmcabn(score.cache = bsc.compute.0,
                      score = "mlik",
@@ -212,8 +212,8 @@ test_that("MBR",{
                      prob.mbr = 0.1,
                      prior.choice = 2)
 
-  dag <- mostprobable(score.cache = bsc.compute.0,prior.choice = 1)
-  expect_equal(max(mc3.out$scores),fitabn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik)
+  dag <- mostProbable(score.cache = bsc.compute.0,prior.choice = 1)
+  expect_equal(max(mc3.out$scores),fitAbn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik)
 
   expect_silent(mcmcabn(score.cache = bsc.compute.0,
                         score = "mlik",
@@ -242,7 +242,7 @@ test_that("mcmcabn",{
 
   out.sim.0 <- invisible(simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 20,n.thin = 1,n.iter = 100,data.param = data.param.0, simulate = TRUE,seed = 132))
 
-  bsc.compute.0 <- buildscorecache(data.df = out.sim.0, data.dists = dist,  max.parents = 2)
+  bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 2)
 
   expect_error(mcmcabn(score.cache = bsc.compute.0,
                        score = "blabla",
@@ -344,7 +344,7 @@ test_that("mcmcabn",{
   colnames(asia) <- c("Asia","Smoking", "Tuberculosis", "LungCancer", "Bronchitis", "Either", "XRay", "Dyspnea")
 
 
-  bsc.compute.asia <- buildscorecache(data.df = asia,
+  bsc.compute.asia <- buildScoreCache(data.df = asia,
                                       data.dists = dist.asia,
                                       max.parents = 2)
 
@@ -363,8 +363,8 @@ test_that("mcmcabn",{
 
 
   #maximum scoring network using exact search (not MCMC based)
-  dag <- mostprobable(score.cache = bsc.compute.asia)
-  expect_equal(max(mcmc.out.asia$scores),fitabn(object = dag,data.df = asia,data.dists = dist.asia)$mlik)
+  dag <- mostProbable(score.cache = bsc.compute.asia)
+  expect_equal(max(mcmc.out.asia$scores),fitAbn(object = dag,data.df = asia,data.dists = dist.asia)$mlik)
 
   mcmc.out.asia <- mcmcabn(score.cache = bsc.compute.asia,
                            score = "mlik",
@@ -378,7 +378,7 @@ test_that("mcmcabn",{
                            prob.mbr = 0.2,
                            prior.choice = 1,heating = 0.7)
 
-  expect_equal(max(mcmc.out.asia$scores),fitabn(object = dag,data.df = asia,data.dists = dist.asia)$mlik)
+  expect_equal(max(mcmc.out.asia$scores),fitAbn(object = dag,data.df = asia,data.dists = dist.asia)$mlik)
 
   ## marks datasets
 
@@ -393,7 +393,7 @@ test_that("mcmcabn",{
   #colnames(asia) <- c("Asia","Smoking", "Tuberculosis", "LungCancer", "Bronchitis", "Either", "XRay", "Dyspnea")
 
 
-  bsc.compute.marks <- buildscorecache(data.df = marks,
+  bsc.compute.marks <- buildScoreCache(data.df = marks,
                                       data.dists = dist.marks,
                                       max.parents = 2)
 
@@ -412,8 +412,8 @@ test_that("mcmcabn",{
 
 
   #maximum scoring network using exact search (not MCMC based)
-  dag <- mostprobable(score.cache = bsc.compute.marks)
-  expect_equal(max(mcmc.out.marks$scores),fitabn(object = dag,data.df = marks,data.dists = dist.marks)$mlik)
+  dag <- mostProbable(score.cache = bsc.compute.marks)
+  expect_equal(max(mcmc.out.marks$scores),fitAbn(object = dag,data.df = marks,data.dists = dist.marks)$mlik)
 
   ##tests
   #data(gaussian.test)
@@ -428,7 +428,7 @@ test_that("mcmcabn",{
 
   colnames(gaussian.test) <- c("A","B","C","D","E","G","H")
 
-  bsc.compute.gaussian.test <- buildscorecache(data.df = gaussian.test,
+  bsc.compute.gaussian.test <- buildScoreCache(data.df = gaussian.test,
                                        data.dists = dist.gaussian.test,
                                        max.parents = 2)
 
@@ -448,8 +448,8 @@ test_that("mcmcabn",{
 
 
   #maximum scoring network using exact search (not MCMC based)
-  dag <- mostprobable(score.cache = bsc.compute.gaussian.test)
-  expect_equal(max(mcmc.out.gaussian.test$scores),fitabn(object = dag,data.df = gaussian.test,data.dists = dist.gaussian.test)$mlik, tol=10)
+  dag <- mostProbable(score.cache = bsc.compute.gaussian.test)
+  expect_equal(max(mcmc.out.gaussian.test$scores),fitAbn(object = dag,data.df = gaussian.test,data.dists = dist.gaussian.test)$mlik, tol=10)
 
   })
 
@@ -467,7 +467,7 @@ test_that("query",{
 
   colnames(gaussian.test) <- c("A","B","C","D","E","G","H")
 
-  bsc.compute.gaussian.test <- buildscorecache(data.df = gaussian.test,
+  bsc.compute.gaussian.test <- buildScoreCache(data.df = gaussian.test,
                                                data.dists = dist.gaussian.test,
                                                max.parents = 2)
 
@@ -506,7 +506,7 @@ dist.asia <- list(Asia = "binomial",
 colnames(asia) <- c("Asia","Smoking", "Tuberculosis", "LungCancer", "Bronchitis", "Either", "XRay", "Dyspnea")
 
 
-bsc.compute.asia <- buildscorecache(data.df = asia,
+bsc.compute.asia <- buildScoreCache(data.df = asia,
                                     data.dists = dist.asia,
                                     max.parents = 2)
 
@@ -524,8 +524,8 @@ mcmc.out.asia <- CoupledHeatedmcmcabn(score.cache = bsc.compute.asia,
                          prior.choice = 1,heating = 5,n.chains = 4)
 
 #maximum scoring network using exact search (not MCMC based)
-dag <- mostprobable(score.cache = bsc.compute.asia)
-expect_equal(max(mcmc.out.asia$score.coupled),fitabn(object = dag,data.df = asia,data.dists = dist.asia)$mlik, tol=5)
+dag <- mostProbable(score.cache = bsc.compute.asia)
+expect_equal(max(mcmc.out.asia$score.coupled),fitAbn(object = dag,data.df = asia,data.dists = dist.asia)$mlik, tol=5)
 
 
 dist.marks <- list(MECH = "gaussian",
@@ -537,7 +537,7 @@ dist.marks <- list(MECH = "gaussian",
 #colnames(asia) <- c("Asia","Smoking", "Tuberculosis", "LungCancer", "Bronchitis", "Either", "XRay", "Dyspnea")
 
 
-bsc.compute.marks <- buildscorecache(data.df = marks,
+bsc.compute.marks <- buildScoreCache(data.df = marks,
                                      data.dists = dist.marks,
                                      max.parents = 2)
 
@@ -555,8 +555,8 @@ mcmc.out.marks <- CoupledHeatedmcmcabn(score.cache = bsc.compute.marks,
                           prior.choice = 1)
 
 #maximum scoring network using exact search (not MCMC based)
-dag <- mostprobable(score.cache = bsc.compute.marks)
-expect_equal(max(mcmc.out.marks$scores),fitabn(object = dag,data.df = marks,data.dists = dist.marks)$mlik, tol = 0.5)
+dag <- mostProbable(score.cache = bsc.compute.marks)
+expect_equal(max(mcmc.out.marks$scores),fitAbn(object = dag,data.df = marks,data.dists = dist.marks)$mlik, tol = 0.5)
 
 })
 

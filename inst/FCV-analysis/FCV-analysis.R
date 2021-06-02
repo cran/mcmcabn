@@ -87,7 +87,7 @@ for (i in 1:11) {
 
   max.par <- i
   # construction of the score cache
-  mycache <- buildscorecache(data.df = mice_output,
+  mycache <- buildScoreCache(data.df = mice_output,
                              data.dists = dists,
                              dag.banned = ~Sex|.+Age|.+Pedigree|.,
                              max.parents = max.par,method = "mle")
@@ -145,7 +145,7 @@ dev.off()
 
 ## --------------------------
 ## adjustment for overfitting
-mycache <- buildscorecache(data.df = mice_output,
+mycache <- buildScoreCache(data.df = mice_output,
                            data.dists = dists,
                            dag.banned = ~Sex|.+Age|.+Pedigree|.,
                            max.parents = 7,method = "mle")
@@ -466,7 +466,7 @@ tographviz(dag.m = dag.bic,data.df = mice_output,data.dists = dists_shame,outfil
 ##aic 10 parents
 ##bic 7 parents
 
-mycache <- buildscorecache(data.df = mice_output,
+mycache <- buildScoreCache(data.df = mice_output,
                            data.dists = dists,
                            dag.banned = ~Sex|.+Age|.+Pedigree|.,
                            max.parents = 10,method = "mle")

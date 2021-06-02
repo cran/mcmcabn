@@ -11,7 +11,7 @@
         stop("A cache of score should be provided. You can produce it using the R package abn.")
 
     if (max(rowSums(score.cache$node.defn)) > (max.parents+1))
-        stop("Check max.parents. It should be the same as the one used in abn::buildscorecache() R function")
+        stop("Check max.parents. It should be the same as the one used in abn::buildScoreCache() R function")
 
     if (length(mcmc.scheme) != 3)
         stop("An MCMC scheme have to be provided. It should be such that c(returned,thinned,burned) made of non negative integers.")

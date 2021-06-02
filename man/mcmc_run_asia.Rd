@@ -11,9 +11,9 @@
 
 \format{
      The data contains an object of class mcmcabn and a cache of score computed using
-     \link[abn:build_score_cache]{buildscorecache} from the \code{abn} R package.
+     \link[abn:build_score_cache]{buildScoreCache} from the \code{abn} R package.
      \itemize{
-     \item \code{bsc.compute.asia}: cache of score with a maximum of two parents per node computed using \link[abn:build_score_cache]{buildscorecache} from the \code{abn} R package.
+     \item \code{bsc.compute.asia}: cache of score with a maximum of two parents per node computed using \link[abn:build_score_cache]{buildScoreCache} from the \code{abn} R package.
      \item \code{dist.asia}: a named list giving the distribution for each node in the network.
      \item \code{mcmc.out.asia}: an object of class mcmcabn.
      }}
@@ -44,7 +44,7 @@ dist.asia <- list(Asia = "binomial",
             XRay = "binomial",
             Dyspnea = "binomial")
 
-bsc.compute.asia <- buildscorecache(data.df = asia,
+bsc.compute.asia <- buildScoreCache(data.df = asia,
                                  data.dists = dist.asia,
                                  max.parents = 2)
 

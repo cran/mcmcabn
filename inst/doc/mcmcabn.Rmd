@@ -38,7 +38,7 @@ Note: in this vignette *structural* MCMC means that the MCMC moves are performed
 
 **How does it work?**
 
-The `mcmcabn` R package takes a cache of pre-computed network scores as input (possibly computed using  `buildscorecache()` function from `abn` R package). Then, the `mcmcabn()` function generates MCMC samples from the posterior distribution of the most supported DAGs. To do so the user should choose a structural prior and a learning scheme. `mcmcabn` is equipped with multiple structural priors: the so-called Koivisto prior (an uninformative prior), the Ellis prior (a modular flat prior) and a possibly user define prior and three algorithms for inferring the structure of Bayesian networks: the classical Monte Carlo Markov Chain Model Choice ((MC)$^3$), the new edge reversal (REV) from Grzegorczyk and Husmeier (2008) and the Markov blanket resampling (MBR) from Su and Borsuk (2016).
+The `mcmcabn` R package takes a cache of pre-computed network scores as input (possibly computed using  `buildScoreCache()` function from `abn` R package). Then, the `mcmcabn()` function generates MCMC samples from the posterior distribution of the most supported DAGs. To do so the user should choose a structural prior and a learning scheme. `mcmcabn` is equipped with multiple structural priors: the so-called Koivisto prior (an uninformative prior), the Ellis prior (a modular flat prior) and a possibly user define prior and three algorithms for inferring the structure of Bayesian networks: the classical Monte Carlo Markov Chain Model Choice ((MC)$^3$), the new edge reversal (REV) from Grzegorczyk and Husmeier (2008) and the Markov blanket resampling (MBR) from Su and Borsuk (2016).
 
 **What are the R package functionalities?**
 
@@ -115,12 +115,12 @@ For the first search, it is advised to limit the number of parents per node to 2
 
 ```{r, eval=FALSE}
 #loglikelihood scores
-bsc.compute.asia <- buildscorecache(data.df = asia,
+bsc.compute.asia <- buildScoreCache(data.df = asia,
                                     data.dists = dist.asia,
                                     max.parents = 2)
 ```
 
-We use the `mcmcabn()` function on the cache of pre-computed networks scores. One needs to define the type of score used (here is the marginal likelihood `mlik` other choice are: `bic`, `aic` or `mdl`). The maximum number of parents per node (same as the one used in `buildscorecache()`). The MCMC learning scheme: number of MCMC samples, number of thinned sampled (to avoid autocorrelation), and the length of the burn-in phase. Here we choose: 1000 returned MCMC steps and 99 thinned steps in between. It means that for each returned MCMC move, 99 have been thinned. The burn-in phase is set to 10000 steps. We decide to initiate the algorithm with a random DAG `start.dag = "random"`, which means that the function randomly selects a valid DAG. In this context, valid means no cycle and an appropriate maximum number of parents. The frequencies of selecting a REV or the MBR jumps are set to 3%. It is usually a good idea to keep those frequencies low. Indeed, REV and MBR are efficient in producing high scoring structure but computationally costly compared to classical MCMC jumps. We select the Koivisto prior `prior.choice = 2`.
+We use the `mcmcabn()` function on the cache of pre-computed networks scores. One needs to define the type of score used (here is the marginal likelihood `mlik` other choice are: `bic`, `aic` or `mdl`). The maximum number of parents per node (same as the one used in `buildScoreCache()`). The MCMC learning scheme: number of MCMC samples, number of thinned sampled (to avoid autocorrelation), and the length of the burn-in phase. Here we choose: 1000 returned MCMC steps and 99 thinned steps in between. It means that for each returned MCMC move, 99 have been thinned. The burn-in phase is set to 10000 steps. We decide to initiate the algorithm with a random DAG `start.dag = "random"`, which means that the function randomly selects a valid DAG. In this context, valid means no cycle and an appropriate maximum number of parents. The frequencies of selecting a REV or the MBR jumps are set to 3%. It is usually a good idea to keep those frequencies low. Indeed, REV and MBR are efficient in producing high scoring structure but computationally costly compared to classical MCMC jumps. We select the Koivisto prior `prior.choice = 2`.
 
 ```{r, eval=FALSE}
 mcmc.out.asia <- mcmcabn(score.cache = bsc.compute.asia,

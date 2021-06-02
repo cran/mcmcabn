@@ -1,4 +1,4 @@
-## ----setup, include = FALSE, cache = FALSE-------------------------------
+## ----setup, include = FALSE, cache = FALSE------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE, 
   comment = "#>",
@@ -11,17 +11,17 @@ knitr::opts_chunk$set(
 )
 options(digits = 3)
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  if (!requireNamespace("BiocManager", quietly = TRUE))
 #      install.packages("BiocManager")
 #  BiocManager::install(c("RBGL", "Rgraphviz", "graph"),  version = "3.8")
 #  
 #  install.packages("mcmcabn")
 
-## ----eval=TRUE-----------------------------------------------------------
+## ----eval=TRUE----------------------------------------------------------------
 library(mcmcabn)
 
-## ---- warning = FALSE, message = FALSE-----------------------------------
+## ---- warning = FALSE, message = FALSE----------------------------------------
 data(asia, package='bnlearn') #for the dataset
 library(abn) #to pre-compute the scores 
 library(ggplot2) #plotting
@@ -55,13 +55,13 @@ dag  <- dagify(Tuberculosis~Asia,
 ggdag_classic(dag, size = 6) + theme_dag_blank()
 
 
-## ---- eval=FALSE---------------------------------------------------------
+## ---- eval=FALSE--------------------------------------------------------------
 #  #loglikelihood scores
-#  bsc.compute.asia <- buildscorecache(data.df = asia,
+#  bsc.compute.asia <- buildScoreCache(data.df = asia,
 #                                      data.dists = dist.asia,
 #                                      max.parents = 2)
 
-## ---- eval=FALSE---------------------------------------------------------
+## ---- eval=FALSE--------------------------------------------------------------
 #  mcmc.out.asia <- mcmcabn(score.cache = bsc.compute.asia,
 #                           score = "mlik",
 #                           data.dists = dist.asia,
@@ -74,11 +74,11 @@ ggdag_classic(dag, size = 6) + theme_dag_blank()
 #                           prob.mbr = 0.03,
 #                           prior.choice = 2)
 
-## ---- echo=FALSE---------------------------------------------------------
+## ---- echo=FALSE--------------------------------------------------------------
 ##to speed up building of the vignette, we store the output
 data("mcmc_run_asia")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #maximum score get from the MCMC sampler
 max(mcmc.out.asia$scores)
 
@@ -86,24 +86,24 @@ max(mcmc.out.asia$scores)
 dag <- mostprobable(score.cache = bsc.compute.asia)
 fitabn(object = dag,data.df = asia, data.dists = dist.asia)$mlik
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 plot(mcmc.out.asia)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 plot(mcmc.out.asia, max.score = TRUE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 summary(mcmc.out.asia)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 query(mcmcabn = mcmc.out.asia)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking + Bronchitis|Smoking)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 query(mcmcabn = mcmc.out.asia ,formula = ~LungCancer|Smoking + Bronchitis|Smoking - Tuberculosis|Smoking - XRay|Bronchitis)
 
