@@ -71,30 +71,14 @@ Once installed, the `mcmcabn` R package can be loaded using:
 library(mcmcabn)
 ```
 
-Let us start with an example from the `bnlearn` R package from Scutari (2010). It is about a small synthetic dataset from Lauritzen and Spiegelhalter (1988) about lung diseases (tuberculosis, lung cancer, or bronchitis) and visits to Asia (8 nodes and 8 arcs).
-
-One needs to pre-compute a cache of scores. We use the R package `abn` to do it. But first, let us define the list of distribution for the nodes and plot the network.
+Let us start with an example from the `bnlearn` R package from Scutari (2010). It is about a small synthetic dataset from Lauritzen and Spiegelhalter (1988) about lung diseases (tuberculosis, lung cancer, or bronchitis) and visits to Asia (8 nodes and 8 arcs). The dataset is include in as `asia`.
 
 ```{r, warning = FALSE, message = FALSE}
-data(asia, package='bnlearn') #for the dataset
-library(abn) #to pre-compute the scores 
-library(ggplot2) #plotting
-library(ggpubr) #plotting
-library(cowplot) #plotting
-library(ggdag) #to plot the DAG
-
-#renaming columns of the dataset
-colnames(asia) <- c("Asia", "Smoking", "Tuberculosis", "LungCancer", "Bronchitis", "Either", "XRay", "Dyspnea")
-
-#lets define the distribution list
-dist.asia <- list(Asia = "binomial",
-                  Smoking = "binomial",
-                  Tuberculosis = "binomial",
-                  LungCancer = "binomial", 
-                  Bronchitis = "binomial",
-                  Either = "binomial",
-                  XRay = "binomial", 
-                  Dyspnea = "binomial")
+library(abn) # to pre-compute the scores 
+library(ggplot2) # plotting
+library(ggpubr) # plotting
+library(cowplot) # plotting
+library(ggdag) # to plot the DAG
 
 #plot the BN as described in the paper
 dag  <- dagify(Tuberculosis~Asia,
@@ -110,12 +94,12 @@ ggdag_classic(dag, size = 6) + theme_dag_blank()
 
 ```
 
-
+One needs to pre-compute a cache of scores. We use the R package `abn` to do it. 
 For the first search, it is advised to limit the number of parents per node to 2, which is the maximum number of parents of the network.
 
 ```{r, eval=FALSE}
 #loglikelihood scores
-bsc.compute.asia <- buildScoreCache(data.df = asia,
+abnCache.2par.asia <- buildScoreCache(data.df = asia,
                                     data.dists = dist.asia,
                                     max.parents = 2)
 ```
@@ -123,11 +107,11 @@ bsc.compute.asia <- buildScoreCache(data.df = asia,
 We use the `mcmcabn()` function on the cache of pre-computed networks scores. One needs to define the type of score used (here is the marginal likelihood `mlik` other choice are: `bic`, `aic` or `mdl`). The maximum number of parents per node (same as the one used in `buildScoreCache()`). The MCMC learning scheme: number of MCMC samples, number of thinned sampled (to avoid autocorrelation), and the length of the burn-in phase. Here we choose: 1000 returned MCMC steps and 99 thinned steps in between. It means that for each returned MCMC move, 99 have been thinned. The burn-in phase is set to 10000 steps. We decide to initiate the algorithm with a random DAG `start.dag = "random"`, which means that the function randomly selects a valid DAG. In this context, valid means no cycle and an appropriate maximum number of parents. The frequencies of selecting a REV or the MBR jumps are set to 3%. It is usually a good idea to keep those frequencies low. Indeed, REV and MBR are efficient in producing high scoring structure but computationally costly compared to classical MCMC jumps. We select the Koivisto prior `prior.choice = 2`.
 
 ```{r, eval=FALSE}
-mcmc.out.asia <- mcmcabn(score.cache = bsc.compute.asia,
+mcmc.2par.asia <- mcmcabn(score.cache = abnCache.2par.asia,
                          score = "mlik",
                          data.dists = dist.asia,
                          max.parents = 2,
-                         mcmc.scheme = c(1000,99,10000),
+                         mcmc.scheme = c(1000,99,1000),
                          seed = 42,
                          verbose = FALSE,
                          start.dag = "random",
@@ -148,7 +132,7 @@ The function `mcmcabn()` returns a list with multiple entries:
 - *burnin* is the length of the burn-in phase.
 - *data.dist* is the list giving the distribution for each node in the network.
 
-The object `mcmc.out` is of class `mcmcabn`. We can check that we reach the maximum possible posterior DAG score even with a small number of MCMC steps. To do so we use an exact search from Koivisto 2004 implemented in `mostprobable()` from `abn`.
+The object `mcmc.out` is of class `mcmcabn`. We can check that we reach the maximum possible posterior DAG score even with a small number of MCMC steps. To do so we use an exact search from Koivisto 2004 implemented in `mostProbable()` from `abn`.
 
 ```{r, echo=FALSE}
 ##to speed up building of the vignette, we store the output
@@ -157,58 +141,58 @@ data("mcmc_run_asia")
 
 ```{r}
 #maximum score get from the MCMC sampler
-max(mcmc.out.asia$scores)
+max(mcmc.2par.asia$scores)
 
 #maximum scoring network using exact search (not MCMC based) 
-dag <- mostprobable(score.cache = bsc.compute.asia)
-fitabn(object = dag,data.df = asia, data.dists = dist.asia)$mlik
+dag <- mostProbable(score.cache = abnCache.2par.asia)
+fitAbn(object = dag,data.df = asia, data.dists = dist.asia)$mlik
 ```
 
 One can plot the output using the *plot()*. On the graph below, one can see the trace plot of the posterior structure score. The dashed red line is the maximum reached score (as expected = -11151). The colored dots on the trace plot indicate when different methods have been used. The densities on the left represent the relative occurring frequencies of the methods. 
 
 ```{r}
-plot(mcmc.out.asia)
+plot(mcmc.2par.asia)
 ```
 
 One can also plot the cumulative best score over the MCMC steps. On this graph, one can see the cumulated maximum posterior structure's score (as expected = -11151). The dashed red line is the maximum reached score. The colored dots on the trace plot indicate when different methods have been used.
 
 ```{r}
-plot(mcmc.out.asia, max.score = TRUE)
+plot(mcmc.2par.asia, max.score = TRUE)
 ```
 
 One can also print the summary of the MCMC run:
 
 ```{r}
-summary(mcmc.out.asia)
+summary(mcmc.2par.asia)
 ```
 This function return some MCMC diagnostics and descriptive metrics.
 
 The main advantage of computing MCMC samples from the posterior is that we can structurally query them. Hence we account for the uncertainty in the structures through Bayesian model averaging. In practice, we compute the probabilities of the arcs in the DAG or the probability of a given part of a structure. Below are the individual frequencies of the arcs.
 
 ```{r}
-query(mcmcabn = mcmc.out.asia)
+query(mcmcabn = mcmc.2par.asia)
 ```
 
 The `query()` function takes formula statements. So it is possible to explicitly query: **what is the probability of LungCancer node being children of the Smoking node?**
 
 ```{r}
-query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking)
+query(mcmcabn = mcmc.2par.asia, formula = ~ LungCancer|Smoking)
 ```
 
-This means that an arrow from Smoking to LungCancer appears in `r query(mcmcabn = mcmc.out.asia, formula = ~LungCancer|Smoking)*100`% of the sampled DAGs. 
+This means that an arrow from Smoking to LungCancer appears in `r query(mcmcabn = mcmc.2par.asia, formula = ~LungCancer|Smoking)*100`% of the sampled DAGs. 
 
 One can also ask more complicated structural requests. If we want to know **what is the probability of Smoking node being parent of both LungCancer and Bronchitis node?**
 
 ```{r}
-query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking + Bronchitis|Smoking)
+query(mcmcabn = mcmc.2par.asia, formula = ~ LungCancer|Smoking + Bronchitis|Smoking)
 ```
 
-It means that an arrow from Smoking to LungCancer **and** an arrow from Smoking to Bronchitis appears in `r query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking+Bronchitis|Smoking)*100`% of the sampled DAGs. This probability cannot be read from the matrix above. Indeed, it is a structural statement. 
+It means that an arrow from Smoking to LungCancer **and** an arrow from Smoking to Bronchitis appears in `r query(mcmcabn = mcmc.2par.asia, formula = ~ LungCancer|Smoking+Bronchitis|Smoking)*100`% of the sampled DAGs. This probability cannot be read from the matrix above. Indeed, it is a structural statement. 
 
 If one wants to query positive and negative statements such as **What is the probability of the previous statement when there is no arc from Smoking to Tuberculosis and no arc from Bronchitis to XRay?**
 
 ```{r}
-query(mcmcabn = mcmc.out.asia ,formula = ~LungCancer|Smoking + Bronchitis|Smoking - Tuberculosis|Smoking - XRay|Bronchitis)
+query(mcmcabn = mcmc.2par.asia ,formula = ~LungCancer|Smoking + Bronchitis|Smoking - Tuberculosis|Smoking - XRay|Bronchitis)
 ```
 
 So essentially zero! 
@@ -233,7 +217,7 @@ The three main problems addressed by this methodology are:
 
 ### Selecting the most probable structure based on a cache of pre-computed scores
 
-MCMC over DAGs produces estimates of high scoring structures. The actual alternatives are the `mostproable()` (for exact search) or `search.heuristic()` (for approximate search) R functions in the `abn` R package, for example. The former function performs an exact search, but it is limited to 25 nodes DAGs. The latter performs approximate inference.
+MCMC over DAGs produces estimates of high scoring structures. The actual alternatives are the `mostProable()` (for exact search) or `search.heuristic()` (for approximate search) R functions in the `abn` R package, for example. The former function performs an exact search, but it is limited to 25 nodes DAGs. The latter performs approximate inference.
 
 ### Controlling for overfitting
 
@@ -321,4 +305,4 @@ to structure discovery in Bayesian networks." Machine Learning, 50:95–125, 200
 * Imoto, S., Higuchi, T., Goto, T., Tashiro, K., Kuhara, S., and Miyano, S. (2003). Using Bayesian networks for estimating gene networks from microarrays and biological knowledge. In Proceedings of the European Conference on Computational Biology.
 * Goudie, R. J., and Mukherjee, S. (2016). A Gibbs Sampler for Learning DAGs. Journal of machine learning research: JMLR, 17(30), 1-39.
 * Kuipers, J. and Moffa, G. (2017). Partition MCMC for Inference on Acyclic Digraphs, Journal of the American Statistical Association, 112:517, 282-299, DOI: 10.1080/01621459.2015.1133426
-* Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journal of Statistical Software, 35(3), 1 - 22. \doi{http://dx.doi.org/10.18637/jss.v035.i03.}
+* Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journal of Statistical Software, 35(3), 1-22. \doi{http://dx.doi.org/10.18637/jss.v035.i03.}

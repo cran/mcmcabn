@@ -33,5 +33,5 @@ There exists a \code{\link{summary}} S3 function that displays more details.
 ## Example from the asia dataset from Lauritzen and Spiegelhalter (1988)
 ## provided by Scutari (2010)
 
-summary(mcmc.out.asia)
+summary(mcmc.2par.asia)
 }

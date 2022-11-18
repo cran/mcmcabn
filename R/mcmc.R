@@ -166,7 +166,7 @@ mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.p
 
 
         switch(method.choice, MC3 = {
-            out <- mc3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
+            out <- MC3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
                 verbose, heating)
             dag.tmp <- out$dag.tmp
             score <- out$score
@@ -214,7 +214,7 @@ mcmcabn <- function(score.cache = NULL, score = "mlik", data.dists = NULL, max.p
             method.choice <- sample(x = c("MC3", "REV", "MBR"), size = 1, prob = c(prob.mc3, prob.rev, prob.mbr))
 
             switch(method.choice, MC3 = {
-                out <- mc3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
+                out <- MC3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
                   verbose, heating)
                 dag.tmp <- out$dag.tmp
                 score <- out$score

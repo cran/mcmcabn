@@ -28,4 +28,5 @@ print.summary.mcmcabn <- function(x, ...) {
 
     print(x$acf, ...)
 
+    invisible(x)
 }  #EOF

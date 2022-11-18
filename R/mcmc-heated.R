@@ -181,7 +181,7 @@ for (c in 1:n.chains) {
         method.choice <- sample(x = c("MC3", "REV", "MBR"), size = 1, prob = c(prob.mc3, prob.rev, prob.mbr))
 
         switch(method.choice, MC3 = {
-            out <- mc3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
+            out <- MC3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
                 verbose, heating)
             tmp.dag[,,c] <- out$dag.tmp
             tmp.scores[c] <- out$score
@@ -247,7 +247,7 @@ if (runif(1)<(alpha)) {
 
 
             switch(method.choice, MC3 = {
-                out <- mc3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
+                out <- MC3(n.var, (dag.tmp), retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag,
                   verbose, heating)
                 tmp.dag[,,c] <- out$dag.tmp
                 tmp.scores[c] <- out$score

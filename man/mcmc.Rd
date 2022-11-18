@@ -104,16 +104,15 @@ Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journ
 # no burn-in (usually not recommended,
 # even if not supported by any theoretical arguments)
 
-data("mcmc_run_asia")
 
 # Let us run: 0.03 REV, 0.03 MBR, 0.94 MC3 MCMC jumps
 # with a random DAG as starting point
 
-mcmc.out.asia.small <- mcmcabn(score.cache = bsc.compute.asia,
+mcmc.out.asia.small <- mcmcabn(score.cache = abnCache.2par.asia,
                   score = "mlik",
                   data.dists = dist.asia,
                   max.parents = 2,
-                  mcmc.scheme = c(100,0,0),
+                  mcmc.scheme = c(50,0,0),
                   seed = 321,
                   verbose = FALSE,
                   start.dag = "random",
@@ -123,9 +122,8 @@ mcmc.out.asia.small <- mcmcabn(score.cache = bsc.compute.asia,
 
 summary(mcmc.out.asia.small)
 
-# Soly with MC3 moves
-
-mcmc.out.asia.small <- mcmcabn(score.cache = bsc.compute.asia,
+# Soly with MC3 moves:
+mcmc.out.asia.small <- mcmcabn(score.cache = abnCache.2par.asia,
                   score = "mlik",
                   data.dists = dist.asia,
                   max.parents = 2,
@@ -151,12 +149,12 @@ startDag <- matrix(data = c(0, 0, 0, 1, 0, 0, 0, 0,
 
 colnames(startDag) <- rownames(startDag) <- names(dist.asia)
 
-# Additionally, let us use the non informative prior
-mcmc.out.asia.small <- mcmcabn(score.cache = bsc.compute.asia,
+# Additionally, let us use the non informative prior:
+mcmc.out.asia.small <- mcmcabn(score.cache = abnCache.2par.asia,
                   score = "mlik",
                   data.dists = dist.asia,
                   max.parents = 2,
-                  mcmc.scheme = c(100,0,0),
+                  mcmc.scheme = c(50,0,0),
                   seed = 42,
                   verbose = FALSE,
                   start.dag = startDag,
@@ -166,7 +164,7 @@ mcmc.out.asia.small <- mcmcabn(score.cache = bsc.compute.asia,
 
 summary(mcmc.out.asia.small)
 
-# let us define our very own prior
+# Let us define our very own prior
 # we know that there should be a link between Smoking and LungCancer nodes
 
 # uninformative prior matrix
@@ -176,11 +174,11 @@ colnames(priorDag) <- rownames(priorDag) <- names(dist.asia)
 # parent = smoking; child = LungCancer
 priorDag["LungCancer","Smoking"] <- 1
 
-mcmc.out.asia.small <- mcmcabn(score.cache = bsc.compute.asia,
+mcmc.out.asia.small <- mcmcabn(score.cache = abnCache.2par.asia,
                                score = "mlik",
                                data.dists = dist.asia,
                                max.parents = 2,
-                               mcmc.scheme = c(100,0,0),
+                               mcmc.scheme = c(50,0,0),
                                seed = 42,
                                verbose = FALSE,
                                start.dag = startDag,
@@ -191,14 +189,14 @@ mcmc.out.asia.small <- mcmcabn(score.cache = bsc.compute.asia,
 
 summary(mcmc.out.asia.small)
 
-# let us improve the convergence rate. The 20 first MCMC moves are performed with an
+# Let us improve the convergence rate. The 20 first MCMC moves are performed with an
 # heating parameter different than one, afterward, heating is set up to one.
 
-mcmc.out.asia.small <- mcmcabn(score.cache = bsc.compute.asia,
+mcmc.out.asia.small <- mcmcabn(score.cache = abnCache.2par.asia,
                   score = "mlik",
                   data.dists = dist.asia,
                   max.parents = 2,
-                  mcmc.scheme = c(150,0,0),
+                  mcmc.scheme = c(100,0,0),
                   seed = 41242,
                   verbose = FALSE,
                   start.dag = "random",

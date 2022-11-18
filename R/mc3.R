@@ -1,4 +1,4 @@
-mc3 <- function(n.var, dag.tmp, retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag, verbose, heating) {
+MC3 <- function(n.var, dag.tmp, retain, ban, max.parents, sc, score.cache, score, prior.choice, prior.lambda, prior.dag, verbose, heating) {
 
     ## construction of neighbours list
     neighbours.list <- NULL

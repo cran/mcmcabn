@@ -6,7 +6,7 @@
 
 query <- function(mcmcabn = NULL, formula = NULL) {
 
-    if (!(!is.matrix(formula) || !is.null(formula) || !class(formula) == "formula")) {
+    if (!(!is.matrix(formula) || !is.null(formula) || !inherits(formula,"formula"))) {
         stop("Formula statment should be given using either a matrix or a formula. Alternativelly, the argument could be null to return all individual arc support")
     }
 
@@ -43,7 +43,7 @@ query <- function(mcmcabn = NULL, formula = NULL) {
 
     }
 
-    if (class(formula) == "formula") {
+    if (inherits(formula,"formula")) {
 
         f <- as.character(formula)
 

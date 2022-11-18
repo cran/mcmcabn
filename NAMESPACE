@@ -6,22 +6,21 @@ summary.mcmcabn,
 print.summary.mcmcabn,
 print.mcmcabn
 )
-       
+
        importFrom(gRbase, topoSortMAT)
-       importFrom(stats,rbinom, acf)
        import(ggplot2)
        importFrom(coda,effectiveSize)
        import(abn)
        importFrom(ggpubr, theme_pubr)
        importFrom(cowplot, ggdraw, axis_canvas, insert_yaxis_grob)
        importFrom(graphics, plot)
-       importFrom(stats, as.formula, dist, quantile, sd)
-       importFrom("stats", "runif")
-       
+importFrom("stats", "runif", "as.formula", "dist", "quantile", "sd",
+           "rbinom", "acf")
+
 #methods for class mcmcabn
 S3method(plot, mcmcabn)
 S3method(summary, mcmcabn)
 S3method(print, mcmcabn)
 
 #method for class summary.mcmcabn
-S3method(print, summary.mcmcabn) 
+S3method(print, summary.mcmcabn)

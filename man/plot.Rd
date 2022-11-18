@@ -9,9 +9,7 @@
 \title{Function to plot mcmcabn class objects}
 
 \usage{
-\method{plot}{mcmcabn}(x,
-     max.score = FALSE,
-     \dots)
+\method{plot}{mcmcabn}(x, max.score = FALSE, \dots)
      }
 
 \arguments{
@@ -44,11 +42,10 @@ Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journ
 \examples{
 ## Example from the asia dataset from Lauritzen and Spiegelhalter (1988)
 ## provided by Scutari (2010)
-data("mcmc_run_asia")
 
 # plot the mcmc run
-plot(mcmc.out.asia)
+plot(mcmc.2par.asia)
 
 # plot cumulative max score
-plot(mcmc.out.asia, max.score = TRUE)
+plot(mcmc.2par.asia, max.score = TRUE)
 }

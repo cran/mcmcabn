@@ -20,13 +20,13 @@ The web pages \url{https://www.math.uzh.ch/pages/mcmcabn/} provide further case 
 \references{
 
 
-Kratzer G, Lewis FI, Willi B, Meli ML, Boretti FS, Hofmann-Lehmann R, Torgerson P, Furrer R and Hartnack S (2020) Bayesian Network Modeling Applied to Feline Calicivirus Infection Among Cats in Switzerland. Front. Vet. Sci. 7:73. doi: 10.3389/fvets.2020.00073 (Preferred reference)
+Kratzer, G., Lewis, F.I., Willi, B., Meli, M.L., Boretti, F.S., Hofmann-Lehmann, R., Torgerson, P., Furrer, R. and Hartnack, S. (2020). Bayesian Network Modeling Applied to Feline Calicivirus Infection Among Cats in Switzerland. Front. Vet. Sci. 7:73. doi: 10.3389/fvets.2020.00073 (Preferred reference)
 
 Kratzer, G. and Furrer, R. (2019). Is a single unique Bayesian network enough to accurately represent
-  your data?. arXiv preprint arXiv:1902.06641
+  your data? arXiv preprint arXiv:1902.06641
 
-  Kratzer, G. and Furrer, R. (2019). mcmcabn: a structural MCMC sampler for DAGs learned from observed
-  systemic datasets. R package version 0.3.  https://CRAN.R-project.org/package=mcmcabn
+  Kratzer, G. and Furrer, R. (2022). mcmcabn: a structural MCMC sampler for DAGs learned from observed
+  systemic datasets. R package version 0.6.  https://CRAN.R-project.org/package=mcmcabn
   }
 
 

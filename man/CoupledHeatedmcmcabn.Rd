@@ -6,6 +6,7 @@
 
 \name{CoupledHeatedmcmcabn}
 \alias{CoupledHeatedmcmcabn}
+\alias{CoupledHeated}
 \title{Coupled Heated Structural MCMC sampler for DAGs}
 
 \usage{
@@ -29,11 +30,11 @@ CoupledHeatedmcmcabn(score.cache = NULL,
 \arguments{
   \item{score.cache}{output from \link[abn:build_score_cache]{buildScoreCache} from the \code{abn} R package.}
   \item{score}{character giving which network score should be used to sample the DAGs landscape.}
-\item{data.dists}{a named list giving the distribution for each node in the network, see details.}
+  \item{data.dists}{a named list giving the distribution for each node in the network, see details.}
   \item{max.parents}{a constant giving the maximum number of parents allowed.}
   \item{mcmc.scheme}{a sampling scheme. It is vector giving in that order: the number of returned DAGS, the number of thinned steps and length of the burn-in phase.}
-\item{seed}{a non-negative integer which sets the seed.}
-\item{verbose}{extra output, see output for details.}
+  \item{seed}{a non-negative integer which sets the seed.}
+  \item{verbose}{extra output, see output for details.}
   \item{start.dag}{a DAG given as a matrix, see details for format, which can be used to provide a starting point for the structural search explicitly. Alternatively, the character "random" will select a random DAG as a starting point. Character "hc" will call a hill-climber to select a DAG as a starting point.}
   \item{prior.dag}{user defined prior. It should be given as a matrix where entries range from zero to one. 0.5 is non-informative for the given arc.}
 \item{prior.lambda}{hyper parameter representing the strength of belief in the user-defined prior.}
@@ -113,32 +114,31 @@ Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journ
 # no burn-in (usually not recommended,
 # even if not supported by any theoretical arguments)
 
-data("mcmc_run_asia")
 
-# run: 0.03 REV, 0.03 MBR, 0.94 MC3 MCMC jumps and 4 chains
+# run: 0.03 REV, 0.03 MBR, 0.94 MC3 MCMC jumps and 3 chains
 # with a random DAG as starting point
 
-mcmc.out.asia.small1 <- CoupledHeatedmcmcabn(score.cache = bsc.compute.asia,
+mcmc.2par.asia.small1 <- CoupledHeatedmcmcabn(score.cache = abnCache.2par.asia,
                          score = "mlik",
                          data.dists = dist.asia,
                          max.parents = 2,
-                         mcmc.scheme = c(150,0,0),
+                         mcmc.scheme = c(100,0,0),
                          seed = 5416,
                          verbose = FALSE,
                          start.dag = "random",
                          prob.rev = 0.03,
                          prob.mbr = 0.03,
-                         prior.choice = 2,heating = 0.,n.chains = 4)
+                         prior.choice = 2,heating = 0.,n.chains = 3)
 
-summary(mcmc.out.asia.small1)
+summary(mcmc.2par.asia.small1)
 
 # compared to the mcmcabn() function
 
-mcmc.out.asia.small2 <- mcmcabn(score.cache = bsc.compute.asia,
+mcmc.2par.asia.small2 <- mcmcabn(score.cache = abnCache.2par.asia,
                          score = "mlik",
                          data.dists = dist.asia,
                          max.parents = 2,
-                         mcmc.scheme = c(150,0,0),
+                         mcmc.scheme = c(100,0,0),
                          seed = 5416,
                          verbose = FALSE,
                          start.dag = "random",
@@ -146,6 +146,6 @@ mcmc.out.asia.small2 <- mcmcabn(score.cache = bsc.compute.asia,
                          prob.mbr = 0.03,
                          prior.choice = 2,heating = 0.25)
 
-summary(mcmc.out.asia.small2)
+summary(mcmc.2par.asia.small2)
 
 }

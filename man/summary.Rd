@@ -39,5 +39,5 @@ Scutari, M. (2010). Learning Bayesian Networks with the bnlearn R Package. Journ
 ## Example from the asia dataset from Lauritzen and Spiegelhalter (1988)
 ## provided by Scutari (2010)
 #summary the MCMC run
-summary(mcmc.out.asia)
+summary(mcmc.2par.asia)
 }

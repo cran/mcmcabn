@@ -20,8 +20,9 @@ plot.mcmcabn <- function(x, max.score = FALSE, ...) {
             "#56B4E9")) + coord_flip()
 
         # create the combined plot
-        return(ggdraw(insert_yaxis_grob(plot = original_plot, grob = y_density, position = "right")))
-        invisible()
+        g <- ggdraw(insert_yaxis_grob(plot = original_plot, grob = y_density, position = "right"))
+        plot(g)
+        invisible(g)
     } else {
         dta$cummax[1] <- dta$scores[1]
         for (i in 2:length(dta$scores)) {
@@ -36,7 +37,7 @@ plot.mcmcabn <- function(x, max.score = FALSE, ...) {
             digits = 2), vjust = -0.5), color = "red") + geom_point(data = dta[dta$method %in% c("REV", "MBR"), ], aes_string(color = "factor(method)")) +
             theme_pubr() + scale_colour_manual(values = c("#F2C500", "#56B4E9")) + labs(x = "DAG index", y = "DAG scores",
             color = "Methods", title = "Trace plot")
-        return(plot(p))
-        invisible()
+        plot(p)
+        invisible(p)
     }
 }  #EOF

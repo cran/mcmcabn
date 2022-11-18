@@ -21,12 +21,12 @@ citEntry(entry = "Article",
 )
 
 citEntry(entry = "Manual",
-    title = "mcmcabn: a structural MCMC sampler for DAGs learned from observed systemic datasets",
+    title = "mcmcabn: Flexible Implementation of a Structural MCMC Sampler for DAGs",
     author = personList(as.person("Gilles Kratzer"), as.person("Reinhard Furrer")),
-    year = "2019",
-    note = "R package version 0.3",
+    year = "2022",
+    note = "R package version 0.5",
     url = "https://CRAN.R-project.org/package=mcmcabn",
   textVersion  =
-  paste("Kratzer, G. and Furrer, R. (2019). mcmcabn: a structural MCMC sampler for DAGs learned from observed systemic datasets. R package version 0.3.
+  paste("Kratzer, G. and Furrer, R. (2022). mcmcabn: Flexible Implementation of a Structural MCMC Sampler for DAGs. R package version 0.5.
   https://CRAN.R-project.org/package=mcmcabn"),
 )

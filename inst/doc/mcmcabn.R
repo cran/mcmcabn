@@ -22,25 +22,11 @@ options(digits = 3)
 library(mcmcabn)
 
 ## ---- warning = FALSE, message = FALSE----------------------------------------
-data(asia, package='bnlearn') #for the dataset
-library(abn) #to pre-compute the scores 
-library(ggplot2) #plotting
-library(ggpubr) #plotting
-library(cowplot) #plotting
-library(ggdag) #to plot the DAG
-
-#renaming columns of the dataset
-colnames(asia) <- c("Asia", "Smoking", "Tuberculosis", "LungCancer", "Bronchitis", "Either", "XRay", "Dyspnea")
-
-#lets define the distribution list
-dist.asia <- list(Asia = "binomial",
-                  Smoking = "binomial",
-                  Tuberculosis = "binomial",
-                  LungCancer = "binomial", 
-                  Bronchitis = "binomial",
-                  Either = "binomial",
-                  XRay = "binomial", 
-                  Dyspnea = "binomial")
+library(abn) # to pre-compute the scores 
+library(ggplot2) # plotting
+library(ggpubr) # plotting
+library(cowplot) # plotting
+library(ggdag) # to plot the DAG
 
 #plot the BN as described in the paper
 dag  <- dagify(Tuberculosis~Asia,
@@ -57,16 +43,16 @@ ggdag_classic(dag, size = 6) + theme_dag_blank()
 
 ## ---- eval=FALSE--------------------------------------------------------------
 #  #loglikelihood scores
-#  bsc.compute.asia <- buildScoreCache(data.df = asia,
+#  abnCache.2par.asia <- buildScoreCache(data.df = asia,
 #                                      data.dists = dist.asia,
 #                                      max.parents = 2)
 
 ## ---- eval=FALSE--------------------------------------------------------------
-#  mcmc.out.asia <- mcmcabn(score.cache = bsc.compute.asia,
+#  mcmc.2par.asia <- mcmcabn(score.cache = abnCache.2par.asia,
 #                           score = "mlik",
 #                           data.dists = dist.asia,
 #                           max.parents = 2,
-#                           mcmc.scheme = c(1000,99,10000),
+#                           mcmc.scheme = c(1000,99,1000),
 #                           seed = 42,
 #                           verbose = FALSE,
 #                           start.dag = "random",
@@ -80,30 +66,30 @@ data("mcmc_run_asia")
 
 ## -----------------------------------------------------------------------------
 #maximum score get from the MCMC sampler
-max(mcmc.out.asia$scores)
+max(mcmc.2par.asia$scores)
 
 #maximum scoring network using exact search (not MCMC based) 
-dag <- mostprobable(score.cache = bsc.compute.asia)
-fitabn(object = dag,data.df = asia, data.dists = dist.asia)$mlik
+dag <- mostProbable(score.cache = abnCache.2par.asia)
+fitAbn(object = dag,data.df = asia, data.dists = dist.asia)$mlik
 
 ## -----------------------------------------------------------------------------
-plot(mcmc.out.asia)
+plot(mcmc.2par.asia)
 
 ## -----------------------------------------------------------------------------
-plot(mcmc.out.asia, max.score = TRUE)
+plot(mcmc.2par.asia, max.score = TRUE)
 
 ## -----------------------------------------------------------------------------
-summary(mcmc.out.asia)
+summary(mcmc.2par.asia)
 
 ## -----------------------------------------------------------------------------
-query(mcmcabn = mcmc.out.asia)
+query(mcmcabn = mcmc.2par.asia)
 
 ## -----------------------------------------------------------------------------
-query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking)
+query(mcmcabn = mcmc.2par.asia, formula = ~ LungCancer|Smoking)
 
 ## -----------------------------------------------------------------------------
-query(mcmcabn = mcmc.out.asia, formula = ~ LungCancer|Smoking + Bronchitis|Smoking)
+query(mcmcabn = mcmc.2par.asia, formula = ~ LungCancer|Smoking + Bronchitis|Smoking)
 
 ## -----------------------------------------------------------------------------
-query(mcmcabn = mcmc.out.asia ,formula = ~LungCancer|Smoking + Bronchitis|Smoking - Tuberculosis|Smoking - XRay|Bronchitis)
+query(mcmcabn = mcmc.2par.asia ,formula = ~LungCancer|Smoking + Bronchitis|Smoking - Tuberculosis|Smoking - XRay|Bronchitis)
 

@@ -93,16 +93,16 @@ for (i in 1:11) {
                              max.parents = max.par,method = "mle")
 
   # optimal dag with AIC
-  dag <- mostprobable(score.cache = mycache,score = "bic")
-  fabn <- fitabn(object = dag,method = "mle")
+  dag <- mostProbable(score.cache = mycache,score = "bic")
+  fabn <- fitAbn(object = dag,method = "mle")
   bic.values[i] <- fabn$bic
   # optimal dag with AIC
-  dag <- mostprobable(score.cache = mycache,score = "aic")
-  fabn <- fitabn(object = dag,method = "mle")
+  dag <- mostProbable(score.cache = mycache,score = "aic")
+  fabn <- fitAbn(object = dag,method = "mle")
   aic.values[i] <- fabn$aic
   # optimal dag with MDL
-  dag <- mostprobable(score.cache = mycache,score = "mdl")
-  fabn <- fitabn(object = dag,method = "mle")
+  dag <- mostProbable(score.cache = mycache,score = "mdl")
+  fabn <- fitAbn(object = dag,method = "mle")
   mdl.values[i] <- fabn$mdl
 }
 
@@ -151,7 +151,7 @@ mycache <- buildScoreCache(data.df = mice_output,
                            max.parents = 7,method = "mle")
 
 
-dag <- mostprobable(score.cache = mycache,score = "bic")
+dag <- mostProbable(score.cache = mycache,score = "bic")
 
 plotabn(dag.m = dag$dag,data.dists = dists)
 
@@ -232,7 +232,7 @@ gelman.diag(x = list.mc,autoburnin = TRUE)
 gelman.plot(list.mc)
 
 ## traceplot
-fabn <-fitabn(dag.m = dag,data.df = mice_output,data.dists = dists, method = "mle") #
+fabn <-fitAbn(dag.m = dag,data.df = mice_output,data.dists = dists, method = "mle") #
 
 max.score <- -6403.01 #-fabn$bic
 
@@ -295,7 +295,7 @@ dag.boot.50[dag.mcmc<=0.5]<-0
 
 plotabn(dag.m = dag.boot.50,data.dists = dists)
 
-fabn <-fitabn(dag.m = dag.boot.50,data.df = mice_output,data.dists = dists, method = "mle")
+fabn <-fitAbn(dag.m = dag.boot.50,data.df = mice_output,data.dists = dists, method = "mle")
 fabn$bic
 
 infoDag(dag.boot.50)
@@ -329,7 +329,7 @@ for(i in 1:22){
 
   dag <- u.list.dag[,,order(num_100,decreasing = TRUE)[i]]
   colnames(dag) <- rownames(dag) <- names(dists)
-  fabn <- fitabn(dag.m = dag,data.df = mice_output,data.dists = dists,method = "mle")
+  fabn <- fitAbn(dag.m = dag,data.df = mice_output,data.dists = dists,method = "mle")
   scores.dags[i] <- -fabn$bic
   num.arcs[i] <- sum(dag)
   shd[i] <- compareDag(ref = u.list.dag[,,order(num_100,decreasing = TRUE)[1]],u.list.dag[,,order(num_100,decreasing = TRUE)[i]])$`Hamming-distance`
@@ -451,7 +451,7 @@ dev.off()
 
 tographviz(dag.m = dag.boot.50,data.df = mice_output,data.dists = dists,outfile = "consensus_dag")
 
-fabn <-fitabn(dag.m = dag.boot.50,data.df = mice_output,data.dists = dists, method = "mle")
+fabn <-fitAbn(dag.m = dag.boot.50,data.df = mice_output,data.dists = dists, method = "mle")
 
 links <- query(mcmcabn = mcmc.out.100000)
 links[links<=0.5]<-0
@@ -471,18 +471,18 @@ mycache <- buildScoreCache(data.df = mice_output,
                            dag.banned = ~Sex|.+Age|.+Pedigree|.,
                            max.parents = 10,method = "mle")
 
-dag.aic.10parents <- mostprobable(score.cache = mycache,score = "aic")
+dag.aic.10parents <- mostProbable(score.cache = mycache,score = "aic")
 
 tographviz(dag.m = dag.aic.10parents$dag,data.df = mice_output,data.dists = dists_shame,outfile = "aic_dag_8parents")
 
-dag.bic.7parents <- mostprobable(score.cache = mycache,score = "bic")
+dag.bic.7parents <- mostProbable(score.cache = mycache,score = "bic")
 
 tographviz(dag.m = dag.bic.7parents$dag,data.df = mice_output,data.dists = dists_shame,outfile = "bic_dag_6parents")
 
 ##------
 ##scores
-fabn.aic <- fitabn(dag.m = dag.aic.10parents$dag,data.df = mice_output,data.dists = dists,method = "mle")
-fabn.bic <- fitabn(dag.m = dag.bic.7parents$dag,data.df = mice_output,data.dists = dists,method = "mle")
+fabn.aic <- fitAbn(dag.m = dag.aic.10parents$dag,data.df = mice_output,data.dists = dists,method = "mle")
+fabn.bic <- fitAbn(dag.m = dag.bic.7parents$dag,data.df = mice_output,data.dists = dists,method = "mle")
 plotabn(dag.m = dag.bic.7parents$dag,data.dists = dists)
 
 ##-------------
