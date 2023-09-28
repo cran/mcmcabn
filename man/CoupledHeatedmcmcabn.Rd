@@ -28,7 +28,7 @@ CoupledHeatedmcmcabn(score.cache = NULL,
                  }
 
 \arguments{
-  \item{score.cache}{output from \link[abn:build_score_cache]{buildScoreCache} from the \code{abn} R package.}
+  \item{score.cache}{output from \link[abn:buildScoreCache]{buildScoreCache} from the \code{abn} R package.}
   \item{score}{character giving which network score should be used to sample the DAGs landscape.}
   \item{data.dists}{a named list giving the distribution for each node in the network, see details.}
   \item{max.parents}{a constant giving the maximum number of parents allowed.}
@@ -57,7 +57,7 @@ The parallel tempering scheme has been proposed by (Geyer, 1991). The idea is to
 
 
 
-The parameter \code{start.dag} can be: \code{"random"}, \code{"hc"} or user defined. If user select \code{"random"} then a random valid DAG is selected. The routine used favourise low density structure. If \code{"hc"} (for Hill-climber: \link[abn:search_heuristic]{searchHeuristic} then a DAG is selected using 100 different searches with 500 optimization steps. A user defined DAG can be provided. It should be a named square matrix  containing only zeros and ones. The DAG should be valid (i.e. acyclic).
+The parameter \code{start.dag} can be: \code{"random"}, \code{"hc"} or user defined. If user select \code{"random"} then a random valid DAG is selected. The routine used favourise low density structure. If \code{"hc"} (for Hill-climber: \link[abn:searchHeuristic]{searchHeuristic} then a DAG is selected using 100 different searches with 500 optimization steps. A user defined DAG can be provided. It should be a named square matrix  containing only zeros and ones. The DAG should be valid (i.e. acyclic).
 
 The parameter \code{prior.choice} determines the prior used within each node for a given choice of parent combination. In Koivisto and Sood (2004) p.554, a form of prior is used, which assumes that the prior probability for parent combinations comprising of the same number of parents are all equal. Specifically, that the prior probability for parent set G with cardinality |G| is proportional to 1/[n-1 choose |G|] where there are n total nodes. Note that this favors parent combinations with either very low or very high cardinality, which may not be appropriate. This prior is used when \code{prior.choice=2}. When \code{prior.choice=1} an uninformative prior is used where parent combinations of all cardinalities are equally likely. When \code{prior.choice=3} a user-defined prior is used, defined by \code{prior.dag}. It is given by an adjacency matrix (squared and same size as number of nodes) where entries ranging from zero to one give the user prior belief. An hyperparameter defining the global user belief in the prior is given by \code{prior.lambda}.
 

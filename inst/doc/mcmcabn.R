@@ -70,7 +70,7 @@ max(mcmc.2par.asia$scores)
 
 #maximum scoring network using exact search (not MCMC based) 
 dag <- mostProbable(score.cache = abnCache.2par.asia)
-fitAbn(object = dag,data.df = asia, data.dists = dist.asia)$mlik
+fitAbn(object = dag)$mlik
 
 ## -----------------------------------------------------------------------------
 plot(mcmc.2par.asia)

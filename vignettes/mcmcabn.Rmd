@@ -54,7 +54,7 @@ We first illustrate the package with a simple example. Then some more technical 
 
 # Simple *mcmcabn* example
 
-The package is available on [CRAN](https://CRAN.R-project.org/package=mcmcabn) and can be installed directly in R. However it needs two R packages: [abn](https://CRAN.R-project.org/package=abn) and [gRbase](https://CRAN.R-project.org/package=gRbase) that requires libraries not stored on [CRAN](https://cran.r-project.org/) but on [bioconductor](http://www.bioconductor.org/). Hence those two packages **must** be installed **before** installing `mcmcabn`:
+The package is available on [CRAN](https://CRAN.R-project.org/package=mcmcabn) and can be installed directly in R. However it needs two R packages: [abn](https://CRAN.R-project.org/package=abn) and [gRbase](https://CRAN.R-project.org/package=gRbase) that requires libraries not stored on [CRAN](https://cran.r-project.org/) but on [bioconductor](https://www.bioconductor.org/). Hence those two packages **must** be installed **before** installing `mcmcabn`:
 
 
 ```{r,eval=FALSE}
@@ -145,7 +145,7 @@ max(mcmc.2par.asia$scores)
 
 #maximum scoring network using exact search (not MCMC based) 
 dag <- mostProbable(score.cache = abnCache.2par.asia)
-fitAbn(object = dag,data.df = asia, data.dists = dist.asia)$mlik
+fitAbn(object = dag)$mlik
 ```
 
 One can plot the output using the *plot()*. On the graph below, one can see the trace plot of the posterior structure score. The dashed red line is the maximum reached score (as expected = -11151). The colored dots on the trace plot indicate when different methods have been used. The densities on the left represent the relative occurring frequencies of the methods. 

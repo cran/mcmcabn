@@ -1,11 +1,13 @@
 
-R version 4.1.3 (2022-03-10) -- "One Push-Up"
+R version 4.2.1 (2022-06-23) -- "Funny-Looking Kid"
 Copyright (C) 2022 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
 Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
 
 R is a collaborative project with many contributors.
 Type 'contributors()' for more information and
@@ -24,58 +26,10 @@ Step1. completed max alpha_i(S) for all i and S
 Total sets g(S) to be evaluated over: 32
 Step1. completed max alpha_i(S) for all i and S
 Total sets g(S) to be evaluated over: 32
-Creation of the BUG file: 'model.bug'
-BUG 'model.bug' file created
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-Graph information:
-   Observed stochastic nodes: 0
-   Unobserved stochastic nodes: 5
-   Total graph size: 17
-
-Initializing model
-
 Step1. completed max alpha_i(S) for all i and S
 Total sets g(S) to be evaluated over: 32
-Creation of the BUG file: 'model.bug'
-BUG 'model.bug' file created
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-Graph information:
-   Observed stochastic nodes: 0
-   Unobserved stochastic nodes: 3
-   Total graph size: 8
-
-Initializing model
-
-Creation of the BUG file: 'model.bug'
-BUG 'model.bug' file created
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-Graph information:
-   Observed stochastic nodes: 0
-   Unobserved stochastic nodes: 5
-   Total graph size: 15
-
-Initializing model
-
 Step1. completed max alpha_i(S) for all i and S
 Total sets g(S) to be evaluated over: 32
-Creation of the BUG file: 'model.bug'
-BUG 'model.bug' file created
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-Graph information:
-   Observed stochastic nodes: 0
-   Unobserved stochastic nodes: 5
-   Total graph size: 19
-
-Initializing model
-
 Step1. completed max alpha_i(S) for all i and S
 Total sets g(S) to be evaluated over: 256
 Step1. completed max alpha_i(S) for all i and S
@@ -90,4 +44,4 @@ Total sets g(S) to be evaluated over: 32
 > 
 > proc.time()
    user  system elapsed 
- 67.002   4.935  65.827 
+144.656 327.333  70.590 

@@ -13,6 +13,47 @@ data(asia, package='bnlearn')
 data(marks, package='bnlearn')
 data(gaussian.test, package='bnlearn')
 
+
+patchSimulateAbn <- function(data.dists, data.param, data.param.var=NULL) {
+  eps <- 1e-12
+
+  adj <- abs(data.param) > 1e-12
+  diag(adj) <- 0
+
+  nnames <- names(data.dists)
+  lnames <- length(data.dists)
+  out <- list()
+  out$abnDag <- createAbnDag(adj, data.dists=data.dists)
+
+  if (is.null(data.param.var)) {
+    out$mse <- rep(1, lnames)
+  } else {
+     out$mse <- diag(data.param)
+  }
+  names(out$mse) <- nnames
+
+  out$coef <- list()
+  for (i in 1:lnames) {
+    tmpn <- paste0(nnames[i],"|intercept")
+    tmpv <- data.param[i,i]
+    for (j in 1:lnames) {
+      if ((i != j) && (abs(data.param[i,j]) > eps)) {
+        tmpn <- c(tmpn, nnames[j])
+        tmpv <- c(tmpv, data.param[i,j])
+      }
+    }
+    dim(tmpv) <- c(1,length(tmpv))
+    colnames(tmpv) <- tmpn
+    out$coef[[i]] <- tmpv
+  }
+  names(out$coef) <- names(data.dists)
+
+  out$group.var <- NULL
+
+  class(out) <- "abnFit"
+  out
+}
+
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ##General tests
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,7 +74,10 @@ test_that("mc3",{
   diag(data.param)<-0.5
   colnames(data.param) <- rownames(data.param) <- names(dist)
 
-  out.sim.0 <- simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 1000,n.thin = 1,n.iter = 1000,data.param = 0.4*data.param, simulate = TRUE,seed = 132,verbose = FALSE)
+#  out.sim.0 <- simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 1000,n.thin = 1,n.iter = 1000,data.param = 0.4*data.param, simulate = TRUE,seed = 132,verbose = FALSE)
+
+  object <- patchSimulateAbn(data.dists = dist, data.param = 0.4*data.param)
+  out.sim.0 <- simulateAbn(object = object, n.chains = 1L, n.adapt = 1000L, n.thin = 1L, n.iter = 1000L, seed = 132L)
 
   bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
 
@@ -50,7 +94,7 @@ test_that("mc3",{
                   prior.choice = 1,heating = 0.5)
 
   dag <- mostProbable(score.cache = bsc.compute.0,prior.choice = 1)
-  expect_equal(max(mc3.out$scores),fitAbn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik)
+  expect_equal(max(mc3.out$scores),fitAbn(object = dag)$mlik)
 
   mc3.out <- mcmcabn(score.cache = bsc.compute.0,
                      score = "mlik",
@@ -65,7 +109,7 @@ test_that("mc3",{
                      prior.choice = 2)
 
   dag <- mostProbable(score.cache = bsc.compute.0,prior.choice = 2)
-  expect_equal(max(mc3.out$scores),fitAbn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik, tol=0.0001)
+  expect_equal(max(mc3.out$scores),fitAbn(object = dag)$mlik, tol=0.0001)
 
   #test influence of user define prior
   data.param.eq <- matrix(data = 0,nrow = 5,ncol = 5)
@@ -117,7 +161,8 @@ test_that("REV",{
   diag(data.param)<-0.5
   colnames(data.param) <- rownames(data.param) <- names(dist)
 
-  out.sim.0 <- invisible(simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 1000,n.thin = 1,n.iter = 1000,data.param = 0.4*data.param, simulate = TRUE,seed = 132))
+  object <- patchSimulateAbn(data.dists = dist,data.param = 0.4*data.param)
+  out.sim.0 <- invisible(simulateAbn(object, n.chains = 1L, n.adapt = 1000L, n.thin = 1L, n.iter = 1000L, seed = 132L))
 
   bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
 
@@ -134,7 +179,7 @@ test_that("REV",{
                      prior.choice = 1)
 
   dag <- mostProbable(score.cache = bsc.compute.0,prior.choice = 1)
-  expect_equal(max(mc3.out$scores),fitAbn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik)
+  expect_equal(max(mc3.out$scores),fitAbn(object = dag)$mlik)
 
   expect_silent(a<-mcmcabn(score.cache = bsc.compute.0,
                         score = "mlik",
@@ -159,9 +204,10 @@ test_that("REV",{
   diag(data.param) <- 1
   colnames(data.param) <- rownames(data.param) <- names(dist)
 
-  out.sim.0 <- invisible(simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 1000,n.thin = 1,n.iter = 10,data.param = 0.4*data.param, simulate = TRUE,seed = 132))
+  object <- patchSimulateAbn(data.dists = dist,data.param = 0.4*data.param)
+  out.sim.0 <- invisible(simulateAbn(object, n.chains = 1L, n.adapt = 1000L, n.thin = 1L, n.iter = 10L, seed = 132L))
 
-  bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
+  bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 2)
 
   #
   start.m <- matrix(data = c(0,0,0,1,0,0,0,0,0),nrow = 3L,ncol = 3L,byrow = TRUE)
@@ -196,7 +242,8 @@ test_that("MBR",{
   diag(data.param)<-0.5
   colnames(data.param) <- rownames(data.param) <- names(dist)
 
-  out.sim.0 <- invisible(simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 1000,n.thin = 1,n.iter = 1000,data.param = 0.4*data.param, simulate = TRUE,seed = 132))
+  object <- patchSimulateAbn(data.dists = dist,data.param = 0.4*data.param)
+  out.sim.0 <- invisible(simulateAbn(object, n.chains = 1L, n.adapt = 1000L, n.thin = 1L, n.iter = 1000L, seed = 132L))
 
   bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 3)
 
@@ -213,7 +260,7 @@ test_that("MBR",{
                      prior.choice = 2)
 
   dag <- mostProbable(score.cache = bsc.compute.0,prior.choice = 1)
-  expect_equal(max(mc3.out$scores),fitAbn(object = dag,data.df = out.sim.0,data.dists = dist)$mlik)
+  expect_equal(max(mc3.out$scores),fitAbn(object = dag)$mlik)
 
   expect_silent(mcmcabn(score.cache = bsc.compute.0,
                         score = "mlik",
@@ -240,7 +287,8 @@ test_that("mcmcabn",{
   data.param.0 <- matrix(data = c(0,0,1,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1),nrow = 5L,ncol = 5L,byrow = T)
   colnames(data.param.0) <- rownames(data.param.0) <- names(dist)
 
-  out.sim.0 <- invisible(simulateAbn(data.dists = dist,n.chains = 1,n.adapt = 20,n.thin = 1,n.iter = 100,data.param = data.param.0, simulate = TRUE,seed = 132))
+  object <- patchSimulateAbn(data.dists = dist,data.param = data.param.0)
+  out.sim.0 <- invisible(simulateAbn(object, n.chains = 1L, n.adapt = 20L, n.thin = 1L, n.iter = 100L, seed = 132L))
 
   bsc.compute.0 <- buildScoreCache(data.df = out.sim.0, data.dists = dist,  max.parents = 2)
 
@@ -364,7 +412,7 @@ test_that("mcmcabn",{
 
   #maximum scoring network using exact search (not MCMC based)
   dag <- mostProbable(score.cache = bsc.compute.asia)
-  expect_equal(max(mcmc.out.asia$scores),fitAbn(object = dag,data.df = asia,data.dists = dist.asia)$mlik)
+  expect_equal(max(mcmc.out.asia$scores),fitAbn(object = dag)$mlik)
 
   mcmc.out.asia <- mcmcabn(score.cache = bsc.compute.asia,
                            score = "mlik",
@@ -378,7 +426,7 @@ test_that("mcmcabn",{
                            prob.mbr = 0.2,
                            prior.choice = 1,heating = 0.7)
 
-  expect_equal(max(mcmc.out.asia$scores),fitAbn(object = dag,data.df = asia,data.dists = dist.asia)$mlik)
+  expect_equal(max(mcmc.out.asia$scores),fitAbn(object = dag)$mlik)
 
   ## marks datasets
 
@@ -413,7 +461,7 @@ test_that("mcmcabn",{
 
   #maximum scoring network using exact search (not MCMC based)
   dag <- mostProbable(score.cache = bsc.compute.marks)
-  expect_equal(max(mcmc.out.marks$scores),fitAbn(object = dag,data.df = marks,data.dists = dist.marks)$mlik)
+  expect_equal(max(mcmc.out.marks$scores),fitAbn(object = dag)$mlik)
 
   ##tests
   #data(gaussian.test)
@@ -449,7 +497,7 @@ test_that("mcmcabn",{
 
   #maximum scoring network using exact search (not MCMC based)
   dag <- mostProbable(score.cache = bsc.compute.gaussian.test)
-  expect_equal(max(mcmc.out.gaussian.test$scores),fitAbn(object = dag,data.df = gaussian.test,data.dists = dist.gaussian.test)$mlik, tol=10)
+  expect_equal(max(mcmc.out.gaussian.test$scores),fitAbn(object = dag)$mlik, tol=10)
 
   })
 
@@ -525,7 +573,7 @@ mcmc.out.asia <- CoupledHeatedmcmcabn(score.cache = bsc.compute.asia,
 
 #maximum scoring network using exact search (not MCMC based)
 dag <- mostProbable(score.cache = bsc.compute.asia)
-expect_equal(max(mcmc.out.asia$score.coupled),fitAbn(object = dag,data.df = asia,data.dists = dist.asia)$mlik, tol=5)
+expect_equal(max(mcmc.out.asia$score.coupled),fitAbn(object = dag)$mlik, tol=5)
 
 
 dist.marks <- list(MECH = "gaussian",
@@ -556,7 +604,7 @@ mcmc.out.marks <- CoupledHeatedmcmcabn(score.cache = bsc.compute.marks,
 
 #maximum scoring network using exact search (not MCMC based)
 dag <- mostProbable(score.cache = bsc.compute.marks)
-expect_equal(max(mcmc.out.marks$scores),fitAbn(object = dag,data.df = marks,data.dists = dist.marks)$mlik, tol = 0.5)
+expect_equal(max(mcmc.out.marks$scores),fitAbn(object = dag)$mlik, tol = 0.5)
 
 })
 

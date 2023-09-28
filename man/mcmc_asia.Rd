@@ -18,9 +18,9 @@ mcmc.4par.asia
 
 \format{
      The objects are of class \code{mcmcabn} and rely on a cache of score computed using
-     \link[abn:build_score_cache]{buildScoreCache} from the R package \pkg{abn}.
+     \link[abn:buildScoreCache]{buildScoreCache} from the R package \pkg{abn}.
 }
- 
+
 \seealso{\code{\link{abnCache.4par.asia}},\code{\link{asia}}}
 
 \examples{
